@@ -28,10 +28,10 @@
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans min-h-screen pb-12">
 
-  <!-- BANNER SALDO KURANG / HABIS -->
-  <div id="expiredBanner" class="hidden bg-red-600 text-white py-2 px-4 text-center font-bold text-xs shadow-md no-print sticky top-0 z-50">
-    <i class="fa-solid fa-triangle-exclamation text-amber-300 mr-1"></i> Saldo Kredit Anda Kurang (Min. Rp 1.000 / 1x Hitung). Top Up Sekarang untuk Melanjutkan Simulasi!
-    <button onclick="openTopUpModal()" class="ml-2 bg-amber-400 text-slate-950 text-[11px] font-extrabold px-2.5 py-0.5 rounded shadow hover:bg-amber-300">Top Up Saldo</button>
+  <!-- BANNER MASA LANGGANAN HABIS -->
+  <div id="expiredBanner" class="hidden bg-rose-600 text-white py-2 px-4 text-center font-bold text-xs shadow-md no-print sticky top-0 z-50">
+    <i class="fa-solid fa-triangle-exclamation text-amber-300 mr-1"></i> Masa Aktif Langganan Anda Telah Habis. Perpanjang Akses Rp 49.000 / 30 Hari untuk Bebas Simulasi!
+    <button onclick="openTopUpModal()" class="ml-2 bg-amber-400 text-slate-950 text-[11px] font-extrabold px-2.5 py-0.5 rounded shadow hover:bg-amber-300">Perpanjang Sekarang</button>
   </div>
 
   <!-- HEADER & APP CONFIG BAR -->
@@ -49,7 +49,7 @@
         </div>
       </div>
 
-      <!-- Quick Settings, User & Credit Bar -->
+      <!-- Quick Settings, User & Subscription Bar -->
       <div class="flex flex-wrap items-center gap-3 text-sm">
         <div class="flex items-center gap-1.5">
           <div>
@@ -90,7 +90,7 @@
           </div>
         </div>
 
-        <!-- USER BADGE & SALDO INTEGRATED BAR -->
+        <!-- USER BADGE & SUBSCRIPTION STATUS BAR -->
         <div id="userAccountContainer" class="border-l border-slate-700 pl-3 flex items-center gap-2">
           <div id="loggedOutView">
             <button onclick="openLoginModal()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition shadow">
@@ -106,12 +106,12 @@
             </div>
 
             <div onclick="openTopUpModal()" class="cursor-pointer bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 px-2.5 py-1 rounded flex items-center gap-2 text-xs">
-              <i class="fa-solid fa-wallet text-amber-400"></i>
-              <span class="font-bold" id="userSaldoText">Saldo: Rp 0</span>
+              <i class="fa-solid fa-calendar-check text-amber-400"></i>
+              <span class="font-bold" id="userSubText">Aktif s/d: -</span>
             </div>
 
             <button onclick="openTopUpModal()" class="bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black text-xs px-3 py-1 rounded shadow-md transition flex items-center gap-1">
-              <i class="fa-solid fa-coins"></i> Top Up
+              <i class="fa-solid fa-crown"></i> Langganan
             </button>
           </div>
         </div>
@@ -132,7 +132,7 @@
     </div>
   </header>
 
-  <!-- MODAL LOGIN / MASUK EMAIL (TERHUBUNG SERVED HOSTINGER) -->
+  <!-- MODAL LOGIN / MASUK EMAIL -->
   <div id="loginModal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4 no-print">
     <div class="bg-white rounded-3xl max-w-sm w-full p-6 space-y-4 text-slate-800 shadow-2xl border border-slate-200 text-center">
       <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto text-2xl shadow-inner">
@@ -141,99 +141,67 @@
       <div>
         <h3 class="font-extrabold text-xl text-slate-900">Masuk dengan Email</h3>
         <p class="text-xs text-slate-500 mt-1">
-          Email baru otomatis mendapatkan <strong class="text-emerald-600">Bonus Saldo Awal Rp 5.000 (5x Hitung)</strong>!
+          Pengguna baru otomatis mendapatkan <strong class="text-emerald-600">Akses Gratis Uji Coba 30 Hari</strong>!
         </p>
       </div>
       <div class="space-y-3 text-left">
         <div>
-          <label class="text-xs font-semibold text-slate-700 block mb-1">Alamat Email</label>
+          <label class="text-xs font-semibold text-slate-700 block mb-1">Alamat Email Sekolah</label>
           <input type="email" id="loginEmailInput" placeholder="nama@sekolah.sch.id" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none">
         </div>
         <div>
-          <label class="text-xs font-semibold text-slate-700 block mb-1">Kode Sales / Passcode (Opsional)</label>
-          <input type="text" id="loginSalesCodeInput" placeholder="Contoh: SALES10" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none uppercase">
+          <label class="text-xs font-semibold text-slate-700 block mb-1">Passcode testing (Opsional)</label>
+          <input type="text" id="loginSalesCodeInput" placeholder="Contoh: OWNER2026" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none uppercase">
         </div>
         <button onclick="loginWithEmail()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl py-3 px-4 flex items-center justify-center gap-2 transition shadow-md">
           <i class="fa-solid fa-right-to-bracket"></i> Masuk / Daftar Akun
         </button>
       </div>
-      <p class="text-[11px] text-slate-400 italic">Saldo tersimpan aman di server database edueasy.id</p>
+      <p class="text-[11px] text-slate-400 italic">Status langganan tersimpan aman di edueasy.id</p>
       <button onclick="closeModal('loginModal')" class="text-xs text-slate-500 hover:underline">Tutup</button>
     </div>
   </div>
 
-  <!-- MODAL TOP UP MIDTRANS SNAP -->
+  <!-- MODAL LANGGANAN MIDTRANS SNAP -->
   <div id="topUpModal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4 no-print">
-    <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-5 text-slate-800 shadow-2xl border border-amber-200">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-5 text-slate-800 shadow-2xl border border-amber-200">
       <div class="flex justify-between items-center border-b border-slate-200 pb-3">
         <div>
           <h3 class="font-bold text-lg flex items-center gap-2 text-slate-900">
-            <i class="fa-solid fa-wallet text-amber-500"></i> Top Up Saldo Kalkulator
+            <i class="fa-solid fa-crown text-amber-500"></i> Langganan Paket Sekolah
           </h3>
-          <p class="text-xs text-slate-500">Potongan Rp 1.000 / 1x Hitung langsung dari akun database Anda</p>
+          <p class="text-xs text-slate-500">Akses tanpa batas seluruh fitur audit & simulasi event</p>
         </div>
         <button onclick="closeModal('topUpModal')" class="text-slate-400 hover:text-slate-600 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
       </div>
 
-      <!-- PAKET TOP UP GRID -->
-      <div class="grid grid-cols-2 gap-3">
-        <!-- Paket 1 -->
-        <div onclick="processCreditPayment(10000)" class="p-4 rounded-2xl border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50/50 cursor-pointer transition flex flex-col justify-between space-y-2 group">
-          <div class="flex justify-between items-center">
-            <span class="text-xs font-bold text-slate-500 group-hover:text-blue-600">Paket Hemat</span>
-            <i class="fa-solid fa-bolt text-amber-400"></i>
-          </div>
-          <div>
-            <h4 class="text-xl font-black text-slate-900">Rp 10.000</h4>
-            <p class="text-xs font-bold text-emerald-600 mt-1">10x Hitung (Rp 1.000/x)</p>
-          </div>
-          <button class="w-full bg-slate-900 text-white text-xs font-bold py-1.5 rounded-lg group-hover:bg-blue-600 transition">Beli Sekarang</button>
+      <!-- PAKET LANGGANAN CARD -->
+      <div class="p-5 rounded-2xl border-2 border-amber-400 bg-amber-50/40 space-y-3 relative overflow-hidden">
+        <span class="absolute top-0 right-0 bg-amber-500 text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-bl">Akses PRO</span>
+        <div class="flex items-center gap-2 text-amber-800">
+          <i class="fa-solid fa-bolt text-xl text-amber-500"></i>
+          <span class="font-extrabold text-sm">Paket Unlimited 30 Hari</span>
         </div>
-
-        <!-- Paket 2 -->
-        <div onclick="processCreditPayment(20000)" class="p-4 rounded-2xl border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50/50 cursor-pointer transition flex flex-col justify-between space-y-2 group">
-          <div class="flex justify-between items-center">
-            <span class="text-xs font-bold text-slate-500 group-hover:text-blue-600">Paket Standar</span>
-            <i class="fa-solid fa-bolt text-amber-400"></i>
+        <div>
+          <div class="flex items-baseline gap-1">
+            <h4 class="text-3xl font-black text-slate-900">Rp 49.000</h4>
+            <span class="text-xs text-slate-500 font-bold">/ 30 hari</span>
           </div>
-          <div>
-            <h4 class="text-xl font-black text-slate-900">Rp 20.000</h4>
-            <p class="text-xs font-bold text-emerald-600 mt-1">20x Hitung (Rp 1.000/x)</p>
-          </div>
-          <button class="w-full bg-slate-900 text-white text-xs font-bold py-1.5 rounded-lg group-hover:bg-blue-600 transition">Beli Sekarang</button>
+          <p class="text-xs text-emerald-700 font-semibold mt-1">✨ Hitung & simulasi sepuasnya tanpa batas hitungan</p>
         </div>
-
-        <!-- Paket 3 -->
-        <div onclick="processCreditPayment(50000)" class="p-4 rounded-2xl border-2 border-amber-300 bg-amber-50/30 hover:border-amber-500 hover:bg-amber-50 cursor-pointer transition flex flex-col justify-between space-y-2 group relative overflow-hidden">
-          <span class="absolute top-0 right-0 bg-amber-500 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-bl">Populer</span>
-          <div class="flex justify-between items-center">
-            <span class="text-xs font-bold text-amber-700">Paket Pro</span>
-            <i class="fa-solid fa-crown text-amber-500"></i>
-          </div>
-          <div>
-            <h4 class="text-xl font-black text-slate-900">Rp 50.000</h4>
-            <p class="text-xs font-bold text-emerald-600 mt-1">50x Hitung (Rp 1.000/x)</p>
-          </div>
-          <button class="w-full bg-amber-500 text-slate-950 text-xs font-black py-1.5 rounded-lg hover:bg-amber-400 transition">Beli Sekarang</button>
-        </div>
-
-        <!-- Paket 4 -->
-        <div onclick="processCreditPayment(100000)" class="p-4 rounded-2xl border-2 border-emerald-300 bg-emerald-50/30 hover:border-emerald-500 hover:bg-emerald-50 cursor-pointer transition flex flex-col justify-between space-y-2 group">
-          <div class="flex justify-between items-center">
-            <span class="text-xs font-bold text-emerald-700">Paket Unlimited</span>
-            <i class="fa-solid fa-gem text-emerald-500"></i>
-          </div>
-          <div>
-            <h4 class="text-xl font-black text-slate-900">Rp 100.000</h4>
-            <p class="text-xs font-bold text-emerald-600 mt-1">100x Hitung (Rp 1.000/x)</p>
-          </div>
-          <button class="w-full bg-emerald-600 text-white text-xs font-bold py-1.5 rounded-lg hover:bg-emerald-500 transition">Beli Sekarang</button>
-        </div>
+        <ul class="text-xs text-slate-600 space-y-1.5 pt-2 border-t border-amber-200">
+          <li class="flex items-center gap-1.5"><i class="fa-solid fa-check text-emerald-600"></i> Audit Listrik Harian & Cetak Laporan PDF</li>
+          <li class="flex items-center gap-1.5"><i class="fa-solid fa-check text-emerald-600"></i> Simulasi Rekomendasi Genset Event Sekolah</li>
+          <li class="flex items-center gap-1.5"><i class="fa-solid fa-check text-emerald-600"></i> Simpan Data ke Google Sheets Sekolah</li>
+        </ul>
+        <button onclick="processSubscriptionPayment()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-sm py-3 rounded-xl transition shadow-md flex items-center justify-center gap-2">
+          <i class="fa-solid fa-credit-card"></i> Perpanjang Langganan Sekarang
+        </button>
       </div>
 
       <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-center">
         <p class="text-[11px] text-slate-500">
-          <i class="fa-solid fa-qrcode text-emerald-600 mr-1"></i> Pembayaran QRIS / Bank Transfer / E-Wallet diproses otomatis via <strong>Midtrans Snap</strong> tanpa biaya OTP.
+          <i class="fa-solid fa-qrcode text-emerald-600 mr-1"></i> Pembayaran QRIS / Bank Transfer / E-Wallet diproses otomatis via <strong>Midtrans Snap</strong>.
         </p>
       </div>
     </div>
@@ -297,7 +265,7 @@
           </div>
         </div>
 
-        <!-- Card 2: Peak Load Gauge & Room Estimator Indicator -->
+        <!-- Card 2: Peak Load Gauge -->
         <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 print-card">
           <div class="flex justify-between items-center mb-2">
             <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Beban Puncak Inventaris</p>
@@ -614,20 +582,20 @@
 
   <!-- JAVASCRIPT LOGIC INTEGRATED WITH HOSTINGER API & MIDTRANS -->
   <script>
-    // ENDPOINT API SERVER HOSTINGER
-    
+    // ENDPOINT API SERVER HOSTINGER DENGAN PATH DIRECTORY BARU
     const API_BASE_URL = 'https://edueasy.id/api-kalkulator-listrik';
 
     // URL Web App Apps Script untuk sync Sheets
     const GAS_URL = "https://script.google.com/macros/s/AKfycbyUbHeH5sD5KI1-dCGLNjGzLzEunKYEvuaHw003NHBMqGcXSKnl5SN54ent1UpOvBSm/exec";
 
-    // STATE USER SESSION SERVER
+    // STATE USER SESSION SUBSCRIPTION SERVER
     let currentUser = {
       isLoggedIn: false,
       userId: '',
       email: '',
       name: '',
-      saldo: 0
+      isSubscribed: false,
+      subExpiryDate: ''
     };
 
     let inventory = [
@@ -641,14 +609,23 @@
 
     let customEventGear = [];
 
-    // ================= 1. SYSTEM SESSION & SERVER BALANCE INTEGRATION =================
+    // Format tampilan tanggal Indonesia (DD Mmm YYYY)
+    function formatDateIndo(dateStr) {
+      if (!dateStr) return '';
+      const parts = dateStr.split('-');
+      if (parts.length !== 3) return dateStr;
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+      return `${parts[2]} ${months[parseInt(parts[1]) - 1]} ${parts[0]}`;
+    }
+
+    // ================= 1. SYSTEM SESSION & SUBSCRIPTION STATUS =================
     function initServerUserSession() {
-      const savedSession = localStorage.getItem('calc_server_user_db');
+      const savedSession = localStorage.getItem('calc_server_user_sekolah_db');
       if (savedSession) {
         try {
           currentUser = JSON.parse(savedSession);
           if (currentUser.email) {
-            fetchUserBalanceFromServer(currentUser.email);
+            fetchUserStatusFromServer(currentUser.email);
           }
         } catch(e) {
           console.error("Session parse error:", e);
@@ -657,13 +634,13 @@
       renderUserSessionUI();
     }
 
-    async function fetchUserBalanceFromServer(userEmail) {
+    async function fetchUserStatusFromServer(userEmail, passcode = '') {
       if (!userEmail) return;
       try {
         const res = await fetch(`${API_BASE_URL}/check-user.php`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: userEmail })
+          body: JSON.stringify({ email: userEmail, passcode: passcode })
         });
 
         const data = await res.json();
@@ -671,12 +648,13 @@
           currentUser.isLoggedIn = true;
           currentUser.email = userEmail;
           currentUser.userId = userEmail;
-          currentUser.saldo = parseInt(data.saldo) || 0;
           currentUser.name = userEmail.split('@')[0];
+          currentUser.isSubscribed = data.isSubscribed;
+          currentUser.subExpiryDate = data.subExpiryDate;
           saveServerUserSession();
         }
       } catch (err) {
-        console.error("Gagal menyinkronkan saldo dari database server:", err);
+        console.error("Gagal menyinkronkan data langganan dari server:", err);
       }
     }
 
@@ -684,19 +662,22 @@
       const loggedOutView = document.getElementById('loggedOutView');
       const loggedInView = document.getElementById('loggedInView');
       const userNameText = document.getElementById('userNameText');
-      const userSaldoText = document.getElementById('userSaldoText');
+      const userSubText = document.getElementById('userSubText');
       const expiredBanner = document.getElementById('expiredBanner');
 
       if (currentUser.isLoggedIn && currentUser.email) {
         loggedOutView.classList.add('hidden');
         loggedInView.classList.remove('hidden');
         userNameText.innerText = currentUser.name || currentUser.email.split('@')[0];
-        userSaldoText.innerText = `Saldo: Rp ${(currentUser.saldo || 0).toLocaleString('id-ID')}`;
 
-        if (currentUser.saldo < 1000) {
-          if (expiredBanner) expiredBanner.classList.remove('hidden');
-        } else {
+        const formattedDate = currentUser.subExpiryDate ? formatDateIndo(currentUser.subExpiryDate) : '-';
+
+        if (currentUser.isSubscribed) {
+          userSubText.innerText = `Aktif s/d: ${formattedDate}`;
           if (expiredBanner) expiredBanner.classList.add('hidden');
+        } else {
+          userSubText.innerText = `Masa Aktif Habis (${formattedDate})`;
+          if (expiredBanner) expiredBanner.classList.remove('hidden');
         }
       } else {
         loggedOutView.classList.remove('hidden');
@@ -706,7 +687,7 @@
     }
 
     function saveServerUserSession() {
-      localStorage.setItem('calc_server_user_db', JSON.stringify(currentUser));
+      localStorage.setItem('calc_server_user_sekolah_db', JSON.stringify(currentUser));
       renderUserSessionUI();
     }
 
@@ -721,7 +702,7 @@
       await processUserLogin(emailInput, salesCodeInput);
     }
 
-    async function processUserLogin(email, salesCode = '') {
+    async function processUserLogin(email, passcode = '') {
       showToast("Menghubungkan ke server...");
       try {
         const response = await fetch(`${API_BASE_URL}/check-user.php`, {
@@ -729,7 +710,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
             email: email,
-            sales_code: salesCode 
+            passcode: passcode 
           })
         });
 
@@ -741,21 +722,21 @@
             userId: email,
             email: email,
             name: email.split('@')[0],
-            saldo: parseInt(data.saldo) || 0,
-            salesCode: data.salesCode || ''
+            isSubscribed: data.isSubscribed,
+            subExpiryDate: data.subExpiryDate
           };
 
           saveServerUserSession();
           closeModal('loginModal');
 
+          const formattedExpiry = formatDateIndo(data.subExpiryDate);
+
           if (data.isNew) {
-            let msg = "🎉 Selamat datang! Bonus saldo awal Rp 5.000 telah ditambahkan.";
-            if (data.salesCode) {
-              msg += ` Terikat Sales: ${data.salesCode}`;
-            }
-            showToast(msg);
+            showToast(`🎉 Akun terdaftar! Akses Uji Coba Gratis aktif hingga ${formattedExpiry}`);
+          } else if (data.isOwner) {
+            showToast(`👑 Mode Testing Owner Aktif! Akses aktif hingga ${formattedExpiry}`);
           } else {
-            showToast(`👋 Login berhasil! Saldo Anda: Rp ${currentUser.saldo.toLocaleString('id-ID')}`);
+            showToast(`👋 Login berhasil! Akses aktif hingga ${formattedExpiry}`);
           }
           calculateAll();
         } else {
@@ -773,67 +754,50 @@
         userId: '',
         email: '',
         name: '',
-        saldo: 0
+        isSubscribed: false,
+        subExpiryDate: ''
       };
-      localStorage.removeItem('calc_server_user_db');
+      localStorage.removeItem('calc_server_user_sekolah_db');
       renderUserSessionUI();
       showToast("Anda telah keluar.");
     }
 
-    // ================= 2. CREDIT DEDUCTION VIA API (potong-saldo.php) =================
-    async function triggerActionWithCredit(callbackAction) {
+    // ================= 2. VERIFIKASI LANGGANAN AKTIF =================
+    function triggerActionWithCredit(callbackAction) {
       if (!currentUser.isLoggedIn || !currentUser.email) {
         openLoginModal();
         return;
       }
 
-      showToast("Memproses pemotongan saldo...");
+      if (!currentUser.isSubscribed) {
+        showToast("⚠️ Masa langganan telah habis. Silakan perpanjang langganan.");
+        openTopUpModal();
+        return;
+      }
 
-      try {
-        const response = await fetch(`${API_BASE_URL}/potong-saldo.php`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: currentUser.email })
-        });
-
-        const result = await response.json();
-
-        if (result.success) {
-          currentUser.saldo = parseInt(result.sisaSaldo) || 0;
-          saveServerUserSession();
-
-          if (typeof callbackAction === 'function') {
-            callbackAction();
-          }
-        } else {
-          showToast(result.message || "⚠️ Saldo tidak cukup, silakan Top Up.");
-          openTopUpModal();
-        }
-      } catch (err) {
-        console.error("Error potong-saldo:", err);
-        showToast("Gagal memotong saldo. Periksa koneksi internet Anda.");
+      if (typeof callbackAction === 'function') {
+        callbackAction();
       }
     }
 
-    // ================= 3. MIDTRANS SNAP TOP UP PROCESSOR =================
-    async function processCreditPayment(amount) {
+    // ================= 3. MIDTRANS SNAP PAYMENT PROCESSOR =================
+    async function processSubscriptionPayment() {
       if (!currentUser.isLoggedIn || !currentUser.email) {
         showToast("Silakan login dengan email terlebih dahulu!");
         openLoginModal();
         return;
       }
 
-      showToast(`Menyiapkan gerbang pembayaran Midtrans Rp ${amount.toLocaleString('id-ID')}...`);
+      showToast("Menyiapkan gerbang pembayaran Midtrans Rp 49.000...");
 
       try {
         const response = await fetch(`${API_BASE_URL}/create-snap-token.php`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            amount: amount,
+            amount: 49000,
             email: currentUser.email,
-            custName: currentUser.name || currentUser.email,
-            custPhone: '08120000000'
+            custName: currentUser.name || currentUser.email
           })
         });
 
@@ -847,8 +811,8 @@
         if (window.snap && typeof window.snap.pay === 'function') {
           window.snap.pay(snapToken, {
             onSuccess: function(res) {
-              showToast("✅ Pembayaran Berhasil! Mengupdate saldo...");
-              fetchUserBalanceFromServer(currentUser.email);
+              showToast("✅ Pembayaran Berhasil! Memperbarui status langganan...");
+              fetchUserStatusFromServer(currentUser.email);
               closeModal('topUpModal');
             },
             onPending: function(res) {
@@ -870,7 +834,7 @@
       }
     }
 
-    // ================= 4. APP NAVIGATION & CORE LOGIC =================
+    // ================= 4. NAVIGATION & CORE LOGIC =================
     function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
     function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
     function openLoginModal() { openModal('loginModal'); }
@@ -888,7 +852,7 @@
       toast.classList.remove('opacity-0', 'pointer-events-none');
       setTimeout(() => {
         toast.classList.add('opacity-0', 'pointer-events-none');
-      }, 3000);
+      }, 3500);
     }
 
     function switchTab(tabIndex) {
@@ -1280,7 +1244,7 @@
         return;
       }
 
-      // Potong saldo Rp 1.000 saat memuat data sekolah
+      // Verifikasi status langganan aktif sebelum memuat data
       triggerActionWithCredit(() => {
         if (typeof google !== 'undefined' && google.script && google.script.run) {
           google.script.run
