@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kalkulator Listrik Sekolah & Simulasi Event</title>
+  <title>Kalkulator Listrik Sekolah & Simulasi Event Pro</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   
   <!-- MIDTRANS SNAP SDK (PRODUCTION) -->
   <script type="text/javascript" 
@@ -28,15 +28,23 @@
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans min-h-screen pb-12">
 
+  <!-- BANNER SALDO KURANG / HABIS -->
+  <div id="expiredBanner" class="hidden bg-red-600 text-white py-2 px-4 text-center font-bold text-xs shadow-md no-print sticky top-0 z-50">
+    <i class="fa-solid fa-triangle-exclamation text-amber-300 mr-1"></i> Saldo Kredit Anda Kurang (Min. Rp 1.000 / 1x Hitung). Top Up Sekarang untuk Melanjutkan Simulasi!
+    <button onclick="openTopUpModal()" class="ml-2 bg-amber-400 text-slate-950 text-[11px] font-extrabold px-2.5 py-0.5 rounded shadow hover:bg-amber-300">Top Up Saldo</button>
+  </div>
+
   <!-- HEADER & APP CONFIG BAR -->
-  <header class="bg-slate-900 text-white shadow-md sticky top-0 z-50 no-print">
+  <header class="bg-slate-900 text-white shadow-md sticky top-0 z-40 no-print">
     <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
       <div class="flex items-center gap-3">
         <div class="bg-blue-600 p-2.5 rounded-lg text-xl">
           <i class="fa-solid fa-bolt"></i>
         </div>
         <div>
-          <h1 class="font-bold text-lg leading-tight">Kalkulator Listrik Sekolah</h1>
+          <h1 class="font-bold text-lg leading-tight flex items-center gap-1.5">
+            Kalkulator Listrik Sekolah <span class="bg-amber-400 text-slate-900 text-[10px] font-black px-1.5 py-0.5 rounded">PRO</span>
+          </h1>
           <p class="text-xs text-slate-400">Audit Harian & Simulasi Keputusan Event/Genset</p>
         </div>
       </div>
@@ -82,22 +90,32 @@
           </div>
         </div>
 
-        <!-- USER BADGE & TOP UP KREDIT BUTTON -->
-        <div class="border-l border-slate-700 pl-3 flex items-center gap-2">
-          <button onclick="openLoginModal()" class="bg-slate-800 hover:bg-slate-700 text-xs px-2.5 py-1 rounded border border-slate-700 text-slate-200 flex items-center gap-1.5 transition">
-            <i class="fa-solid fa-user-circle text-blue-400"></i>
-            <span id="userEmailBadge" class="max-w-[100px] truncate">Belum Login</span>
-          </button>
-
-          <div class="bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 px-2.5 py-1 rounded flex items-center gap-2 text-xs">
-            <i class="fa-solid fa-coins text-amber-400"></i>
-            <span class="font-bold"><span id="creditBalanceDisplay">0</span>x Hitung</span>
+        <!-- USER BADGE & SALDO INTEGRATED BAR -->
+        <div id="userAccountContainer" class="border-l border-slate-700 pl-3 flex items-center gap-2">
+          <div id="loggedOutView">
+            <button onclick="openLoginModal()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition shadow">
+              <i class="fa-solid fa-user"></i> Login / Masuk
+            </button>
           </div>
 
-          <button onclick="openTopUpModal()" class="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold text-xs px-3 py-1 rounded shadow-md transition flex items-center gap-1">
-            <i class="fa-solid fa-plus-circle"></i> Top Up
-          </button>
+          <div id="loggedInView" class="hidden flex items-center gap-2">
+            <div class="bg-slate-800 border border-slate-700 text-slate-200 px-2.5 py-1 rounded text-xs flex items-center gap-1.5">
+              <i class="fa-solid fa-user-circle text-blue-400"></i>
+              <span id="userNameText" class="max-w-[100px] truncate font-medium">User</span>
+              <button onclick="logoutUser()" class="text-rose-400 hover:text-rose-300 ml-1" title="Keluar"><i class="fa-solid fa-right-from-bracket"></i></button>
+            </div>
+
+            <div onclick="openTopUpModal()" class="cursor-pointer bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 px-2.5 py-1 rounded flex items-center gap-2 text-xs">
+              <i class="fa-solid fa-wallet text-amber-400"></i>
+              <span class="font-bold" id="userSaldoText">Saldo: Rp 0</span>
+            </div>
+
+            <button onclick="openTopUpModal()" class="bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black text-xs px-3 py-1 rounded shadow-md transition flex items-center gap-1">
+              <i class="fa-solid fa-coins"></i> Top Up
+            </button>
+          </div>
         </div>
+
       </div>
     </div>
 
@@ -114,102 +132,109 @@
     </div>
   </header>
 
-  <!-- MODAL LOGIN / MASUK EMAIL -->
-  <div id="loginModal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 no-print">
-    <div class="bg-white rounded-xl max-w-sm w-full p-6 space-y-4 text-slate-800 shadow-2xl border border-slate-200">
-      <div class="flex justify-between items-center border-b border-slate-200 pb-3">
-        <h3 class="font-bold text-base flex items-center gap-2 text-slate-800">
-          <i class="fa-solid fa-right-to-bracket text-blue-600"></i> Masuk dengan Email
-        </h3>
-        <button onclick="closeLoginModal()" class="text-slate-400 hover:text-slate-600 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+  <!-- MODAL LOGIN / MASUK EMAIL (TERHUBUNG SERVED HOSTINGER) -->
+  <div id="loginModal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4 no-print">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 space-y-4 text-slate-800 shadow-2xl border border-slate-200 text-center">
+      <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto text-2xl shadow-inner">
+        <i class="fa-solid fa-user-lock"></i>
       </div>
-      <p class="text-xs text-slate-600 leading-relaxed">
-        Masukkan email sekolah/pribadi Anda. Email baru otomatis mendapatkan <strong class="text-emerald-600">Bonus Gratis 5x Hitung (Nilai Rp5.000)</strong>!
-      </p>
-      <div class="space-y-2">
-        <label class="text-xs font-semibold text-slate-700 block">Alamat Email</label>
-        <input type="email" id="loginEmailInput" placeholder="nama@sekolah.sch.id" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-sm font-medium focus:outline-none focus:border-blue-500">
+      <div>
+        <h3 class="font-extrabold text-xl text-slate-900">Masuk dengan Email</h3>
+        <p class="text-xs text-slate-500 mt-1">
+          Email baru otomatis mendapatkan <strong class="text-emerald-600">Bonus Saldo Awal Rp 5.000 (5x Hitung)</strong>!
+        </p>
       </div>
-      <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
-        <button onclick="closeLoginModal()" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-lg transition">Batal</button>
-        <button onclick="handleLoginSubmit()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition flex items-center gap-1 shadow-sm">
-          <i class="fa-solid fa-check"></i> Masuk Sekarang
+      <div class="space-y-3 text-left">
+        <div>
+          <label class="text-xs font-semibold text-slate-700 block mb-1">Alamat Email</label>
+          <input type="email" id="loginEmailInput" placeholder="nama@sekolah.sch.id" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none">
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-700 block mb-1">Kode Sales / Passcode (Opsional)</label>
+          <input type="text" id="loginSalesCodeInput" placeholder="Contoh: SALES10" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none uppercase">
+        </div>
+        <button onclick="loginWithEmail()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl py-3 px-4 flex items-center justify-center gap-2 transition shadow-md">
+          <i class="fa-solid fa-right-to-bracket"></i> Masuk / Daftar Akun
         </button>
       </div>
+      <p class="text-[11px] text-slate-400 italic">Saldo tersimpan aman di server database edueasy.id</p>
+      <button onclick="closeModal('loginModal')" class="text-xs text-slate-500 hover:underline">Tutup</button>
     </div>
   </div>
 
-  <!-- MODAL TOP UP MIDTRANS -->
-  <div id="topUpModal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 no-print">
-    <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-5 text-slate-800 shadow-2xl border border-slate-200">
+  <!-- MODAL TOP UP MIDTRANS SNAP -->
+  <div id="topUpModal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4 no-print">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-5 text-slate-800 shadow-2xl border border-amber-200">
       <div class="flex justify-between items-center border-b border-slate-200 pb-3">
         <div>
           <h3 class="font-bold text-lg flex items-center gap-2 text-slate-900">
-            <i class="fa-solid fa-wallet text-amber-500"></i> Isi Ulang Kredit Hitung
+            <i class="fa-solid fa-wallet text-amber-500"></i> Top Up Saldo Kalkulator
           </h3>
-          <p class="text-xs text-slate-500">Pembayaran instan & otomatis via Midtrans (QRIS, VA, e-Wallet)</p>
+          <p class="text-xs text-slate-500">Potongan Rp 1.000 / 1x Hitung langsung dari akun database Anda</p>
         </div>
-        <button onclick="closeTopUpModal()" class="text-slate-400 hover:text-slate-600 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+        <button onclick="closeModal('topUpModal')" class="text-slate-400 hover:text-slate-600 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
       </div>
 
       <!-- PAKET TOP UP GRID -->
       <div class="grid grid-cols-2 gap-3">
         <!-- Paket 1 -->
-        <div onclick="processMidtransPayment(10000, 10)" class="p-4 rounded-xl border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50/50 cursor-pointer transition flex flex-col justify-between space-y-2 group">
+        <div onclick="processCreditPayment(10000)" class="p-4 rounded-2xl border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50/50 cursor-pointer transition flex flex-col justify-between space-y-2 group">
           <div class="flex justify-between items-center">
             <span class="text-xs font-bold text-slate-500 group-hover:text-blue-600">Paket Hemat</span>
             <i class="fa-solid fa-bolt text-amber-400"></i>
           </div>
           <div>
-            <h4 class="text-xl font-black text-slate-900">10x <span class="text-xs font-normal text-slate-500">Hitung</span></h4>
-            <p class="text-sm font-bold text-blue-600 mt-1">Rp 10.000</p>
+            <h4 class="text-xl font-black text-slate-900">Rp 10.000</h4>
+            <p class="text-xs font-bold text-emerald-600 mt-1">10x Hitung (Rp 1.000/x)</p>
           </div>
-          <p class="text-[10px] text-slate-400">Rp 1.000 / simulasi</p>
+          <button class="w-full bg-slate-900 text-white text-xs font-bold py-1.5 rounded-lg group-hover:bg-blue-600 transition">Beli Sekarang</button>
         </div>
 
         <!-- Paket 2 -->
-        <div onclick="processMidtransPayment(20000, 20)" class="p-4 rounded-xl border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50/50 cursor-pointer transition flex flex-col justify-between space-y-2 group">
+        <div onclick="processCreditPayment(20000)" class="p-4 rounded-2xl border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50/50 cursor-pointer transition flex flex-col justify-between space-y-2 group">
           <div class="flex justify-between items-center">
             <span class="text-xs font-bold text-slate-500 group-hover:text-blue-600">Paket Standar</span>
             <i class="fa-solid fa-bolt text-amber-400"></i>
           </div>
           <div>
-            <h4 class="text-xl font-black text-slate-900">20x <span class="text-xs font-normal text-slate-500">Hitung</span></h4>
-            <p class="text-sm font-bold text-blue-600 mt-1">Rp 20.000</p>
+            <h4 class="text-xl font-black text-slate-900">Rp 20.000</h4>
+            <p class="text-xs font-bold text-emerald-600 mt-1">20x Hitung (Rp 1.000/x)</p>
           </div>
-          <p class="text-[10px] text-slate-400">Rp 1.000 / simulasi</p>
+          <button class="w-full bg-slate-900 text-white text-xs font-bold py-1.5 rounded-lg group-hover:bg-blue-600 transition">Beli Sekarang</button>
         </div>
 
         <!-- Paket 3 -->
-        <div onclick="processMidtransPayment(50000, 50)" class="p-4 rounded-xl border-2 border-amber-300 bg-amber-50/30 hover:border-amber-500 hover:bg-amber-50 cursor-pointer transition flex flex-col justify-between space-y-2 group relative overflow-hidden">
-          <span class="absolute top-0 right-0 bg-amber-500 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-bl">Popular</span>
+        <div onclick="processCreditPayment(50000)" class="p-4 rounded-2xl border-2 border-amber-300 bg-amber-50/30 hover:border-amber-500 hover:bg-amber-50 cursor-pointer transition flex flex-col justify-between space-y-2 group relative overflow-hidden">
+          <span class="absolute top-0 right-0 bg-amber-500 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-bl">Populer</span>
           <div class="flex justify-between items-center">
             <span class="text-xs font-bold text-amber-700">Paket Pro</span>
             <i class="fa-solid fa-crown text-amber-500"></i>
           </div>
           <div>
-            <h4 class="text-xl font-black text-slate-900">50x <span class="text-xs font-normal text-slate-500">Hitung</span></h4>
-            <p class="text-sm font-bold text-amber-600 mt-1">Rp 50.000</p>
+            <h4 class="text-xl font-black text-slate-900">Rp 50.000</h4>
+            <p class="text-xs font-bold text-emerald-600 mt-1">50x Hitung (Rp 1.000/x)</p>
           </div>
-          <p class="text-[10px] text-amber-700 font-medium">Cocok untuk Sarpras Sekolah</p>
+          <button class="w-full bg-amber-500 text-slate-950 text-xs font-black py-1.5 rounded-lg hover:bg-amber-400 transition">Beli Sekarang</button>
         </div>
 
         <!-- Paket 4 -->
-        <div onclick="processMidtransPayment(100000, 100)" class="p-4 rounded-xl border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50/50 cursor-pointer transition flex flex-col justify-between space-y-2 group">
+        <div onclick="processCreditPayment(100000)" class="p-4 rounded-2xl border-2 border-emerald-300 bg-emerald-50/30 hover:border-emerald-500 hover:bg-emerald-50 cursor-pointer transition flex flex-col justify-between space-y-2 group">
           <div class="flex justify-between items-center">
-            <span class="text-xs font-bold text-slate-500 group-hover:text-blue-600">Paket Unlimited</span>
-            <i class="fa-solid fa-gem text-blue-500"></i>
+            <span class="text-xs font-bold text-emerald-700">Paket Unlimited</span>
+            <i class="fa-solid fa-gem text-emerald-500"></i>
           </div>
           <div>
-            <h4 class="text-xl font-black text-slate-900">100x <span class="text-xs font-normal text-slate-500">Hitung</span></h4>
-            <p class="text-sm font-bold text-blue-600 mt-1">Rp 100.000</p>
+            <h4 class="text-xl font-black text-slate-900">Rp 100.000</h4>
+            <p class="text-xs font-bold text-emerald-600 mt-1">100x Hitung (Rp 1.000/x)</p>
           </div>
-          <p class="text-[10px] text-slate-400">Kapasitas Maksimal Event</p>
+          <button class="w-full bg-emerald-600 text-white text-xs font-bold py-1.5 rounded-lg hover:bg-emerald-500 transition">Beli Sekarang</button>
         </div>
       </div>
 
       <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-center">
-        <p class="text-xs text-slate-500">🔒 Didukung oleh sistem pembayaran resmi Midtrans Production</p>
+        <p class="text-[11px] text-slate-500">
+          <i class="fa-solid fa-qrcode text-emerald-600 mr-1"></i> Pembayaran QRIS / Bank Transfer / E-Wallet diproses otomatis via <strong>Midtrans Snap</strong> tanpa biaya OTP.
+        </p>
       </div>
     </div>
   </div>
@@ -221,7 +246,7 @@
         <h3 class="font-bold text-base flex items-center gap-2 text-slate-800">
           <i class="fa-solid fa-database text-blue-600"></i> Pilih Sekolah Tersimpan
         </h3>
-        <button onclick="closeSchoolModal()" class="text-slate-400 hover:text-slate-600 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+        <button onclick="closeModal('schoolModal')" class="text-slate-400 hover:text-slate-600 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
       <div class="space-y-2">
         <label class="text-xs font-semibold text-slate-600 block">Daftar Sekolah di Database Google Sheets:</label>
@@ -230,7 +255,7 @@
         </select>
       </div>
       <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
-        <button onclick="closeSchoolModal()" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-lg transition">Batal</button>
+        <button onclick="closeModal('schoolModal')" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-lg transition">Batal</button>
         <button onclick="loadSelectedSchool()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition flex items-center gap-1 shadow-sm">
           <i class="fa-solid fa-download"></i> Muat Data
         </button>
@@ -371,7 +396,7 @@
         <!-- OPSI HARI LIBUR & RUANG TRANSIT VIP -->
         <div class="border-t border-slate-700/80 pt-3 flex flex-wrap items-center justify-between gap-3 text-xs no-print">
           <div class="flex items-center gap-2">
-            <input type="checkbox" id="chkWeekendEvent" checked onchange="calculateEvent()" class="w-4 h-4 text-blue-500 rounded cursor-pointer">
+            <input type="checkbox" id="chkWeekendEvent" checked onchange="triggerActionWithCredit(calculateEvent)" class="w-4 h-4 text-blue-500 rounded cursor-pointer">
             <label for="chkWeekendEvent" class="text-yellow-300 font-semibold cursor-pointer">
               ⚡ Event Hari Libur / Akhir Pekan (KBM & Kelas Reguler Libur)
             </label>
@@ -379,7 +404,7 @@
           
           <div id="vipRoomContainer" class="flex flex-wrap items-center gap-2 bg-slate-800 px-3 py-1.5 rounded border border-slate-700">
             <span class="text-slate-300">Ruang Rias / VIP / Transit Aktif:</span>
-            <input type="number" id="vipRoomCount" value="3" min="0" max="20" onchange="calculateEvent()" class="w-12 bg-slate-900 border border-slate-600 rounded text-center text-white font-bold py-0.5 focus:outline-none focus:border-blue-500">
+            <input type="number" id="vipRoomCount" value="3" min="0" max="20" onchange="triggerActionWithCredit(calculateEvent)" class="w-12 bg-slate-900 border border-slate-600 rounded text-center text-white font-bold py-0.5 focus:outline-none focus:border-blue-500">
             <span class="text-slate-400 text-[11px]">Ruangan</span>
             <span class="text-[10px] text-yellow-300 font-semibold bg-yellow-400/10 px-1.5 py-0.5 rounded border border-yellow-400/20">(+1.300 W / ruangan: AC + Lampu)</span>
           </div>
@@ -404,41 +429,41 @@
             <!-- Preset Items -->
             <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between gap-3">
               <div class="flex items-center gap-3">
-                <input type="checkbox" id="chkVideotron" checked onchange="calculateEvent()" class="w-4 h-4 text-blue-600 rounded no-print">
+                <input type="checkbox" id="chkVideotron" checked onchange="triggerActionWithCredit(calculateEvent)" class="w-4 h-4 text-blue-600 rounded no-print">
                 <div>
                   <p class="font-bold text-slate-800">Videotron / Layar LED Panggung</p>
                   <p class="text-[11px] text-slate-500">Estimasi ~500 Watt / m²</p>
                 </div>
               </div>
               <div class="flex items-center gap-2">
-                <input type="number" id="areaVideotron" value="18" onchange="calculateEvent()" class="w-16 bg-white border border-slate-300 rounded px-2 py-1 text-right font-medium">
+                <input type="number" id="areaVideotron" value="18" onchange="triggerActionWithCredit(calculateEvent)" class="w-16 bg-white border border-slate-300 rounded px-2 py-1 text-right font-medium">
                 <span class="text-slate-500 font-medium">m²</span>
               </div>
             </div>
 
             <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between gap-3">
               <div class="flex items-center gap-3">
-                <input type="checkbox" id="chkSound" checked onchange="calculateEvent()" class="w-4 h-4 text-blue-600 rounded no-print">
+                <input type="checkbox" id="chkSound" checked onchange="triggerActionWithCredit(calculateEvent)" class="w-4 h-4 text-blue-600 rounded no-print">
                 <div>
                   <p class="font-bold text-slate-800">Sound System Line Array</p>
                   <p class="text-[11px] text-slate-500">Kapasitas RMS Total Vendor</p>
                 </div>
               </div>
               <div class="flex items-center gap-2">
-                <input type="number" id="wattSound" value="10000" onchange="calculateEvent()" class="w-20 bg-white border border-slate-300 rounded px-2 py-1 text-right font-medium">
+                <input type="number" id="wattSound" value="10000" onchange="triggerActionWithCredit(calculateEvent)" class="w-20 bg-white border border-slate-300 rounded px-2 py-1 text-right font-medium">
                 <span class="text-slate-500 font-medium">Watt RMS</span>
               </div>
             </div>
 
             <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between gap-3">
               <div class="flex items-center gap-3">
-                <input type="checkbox" id="chkLighting" checked onchange="calculateEvent()" class="w-4 h-4 text-blue-600 rounded no-print">
+                <input type="checkbox" id="chkLighting" checked onchange="triggerActionWithCredit(calculateEvent)" class="w-4 h-4 text-blue-600 rounded no-print">
                 <div>
                   <p class="font-bold text-slate-800">Lighting Panggung (PAR LED & Moving)</p>
                   <p class="text-[11px] text-slate-500">Paket Peralatan Lighting</p>
                 </div>
               </div>
-              <select id="presetLighting" onchange="calculateEvent()" class="bg-white border border-slate-300 rounded px-2 py-1 font-medium">
+              <select id="presetLighting" onchange="triggerActionWithCredit(calculateEvent)" class="bg-white border border-slate-300 rounded px-2 py-1 font-medium">
                 <option value="2000">Minimalis (2.000 W)</option>
                 <option value="5000" selected>Standard Pensi (5.000 W)</option>
                 <option value="10000">Heavy Stage (10.000 W)</option>
@@ -447,28 +472,28 @@
 
             <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between gap-3">
               <div class="flex items-center gap-3">
-                <input type="checkbox" id="chkObs" checked onchange="calculateEvent()" class="w-4 h-4 text-blue-600 rounded no-print">
+                <input type="checkbox" id="chkObs" checked onchange="triggerActionWithCredit(calculateEvent)" class="w-4 h-4 text-blue-600 rounded no-print">
                 <div>
                   <p class="font-bold text-slate-800">Perangkat Streaming & OBS System</p>
                   <p class="text-[11px] text-slate-500">PC OBS, Mixer Video, Kamera</p>
                 </div>
               </div>
               <div class="flex items-center gap-2">
-                <input type="number" id="wattObs" value="1500" onchange="calculateEvent()" class="w-20 bg-white border border-slate-300 rounded px-2 py-1 text-right font-medium">
+                <input type="number" id="wattObs" value="1500" onchange="triggerActionWithCredit(calculateEvent)" class="w-20 bg-white border border-slate-300 rounded px-2 py-1 text-right font-medium">
                 <span class="text-slate-500 font-medium">Watt</span>
               </div>
             </div>
 
             <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between gap-3">
               <div class="flex items-center gap-3">
-                <input type="checkbox" id="chkBazaar" checked onchange="calculateEvent()" class="w-4 h-4 text-blue-600 rounded no-print">
+                <input type="checkbox" id="chkBazaar" checked onchange="triggerActionWithCredit(calculateEvent)" class="w-4 h-4 text-blue-600 rounded no-print">
                 <div>
                   <p class="font-bold text-slate-800">Stand Bazaar Makanan / Tenants</p>
                   <p class="text-[11px] text-slate-500">Alat pemanas / blender (~1000W / stand)</p>
                 </div>
               </div>
               <div class="flex items-center gap-2">
-                <input type="number" id="countBazaar" value="6" onchange="calculateEvent()" class="w-16 bg-white border border-slate-300 rounded px-2 py-1 text-right font-medium">
+                <input type="number" id="countBazaar" value="6" onchange="triggerActionWithCredit(calculateEvent)" class="w-16 bg-white border border-slate-300 rounded px-2 py-1 text-right font-medium">
                 <span class="text-slate-500 font-medium">Stand</span>
               </div>
             </div>
@@ -545,11 +570,11 @@
             <div class="grid grid-cols-2 gap-3 text-xs no-print">
               <div>
                 <label class="block text-slate-500 font-medium mb-1">Durasi Event (Jam)</label>
-                <input type="number" id="eventHours" value="8" min="1" max="48" onchange="calculateEvent()" class="w-full bg-slate-50 border border-slate-300 rounded px-2.5 py-1 font-bold text-slate-800 focus:outline-none focus:border-blue-500">
+                <input type="number" id="eventHours" value="8" min="1" max="48" onchange="triggerActionWithCredit(calculateEvent)" class="w-full bg-slate-50 border border-slate-300 rounded px-2.5 py-1 font-bold text-slate-800 focus:outline-none focus:border-blue-500">
               </div>
               <div id="solarCostInputContainer">
                 <label class="block text-slate-500 font-medium mb-1">Harga Solar (/Liter)</label>
-                <input type="number" id="solarPrice" value="15000" onchange="calculateEvent()" class="w-full bg-slate-50 border border-slate-300 rounded px-2.5 py-1 font-bold text-slate-800 focus:outline-none focus:border-blue-500">
+                <input type="number" id="solarPrice" value="15000" onchange="triggerActionWithCredit(calculateEvent)" class="w-full bg-slate-50 border border-slate-300 rounded px-2.5 py-1 font-bold text-slate-800 focus:outline-none focus:border-blue-500">
               </div>
             </div>
 
@@ -582,13 +607,27 @@
 
   </main>
 
-  <!-- JAVASCRIPT LOGIC -->
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="fixed bottom-4 right-4 bg-slate-900 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-2xl opacity-0 transition-opacity duration-300 pointer-events-none flex items-center gap-2 z-50">
+    <i class="fa-solid fa-circle-check text-emerald-400 text-sm"></i> <span id="toastMsg">Notifikasi</span>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC INTEGRATED WITH HOSTINGER API & MIDTRANS -->
   <script>
-    // URL Web App Apps Script untuk hosting GitHub Pages
+    // ENDPOINT API SERVER HOSTINGER
+    const API_BASE_URL = 'https://edueasy.id/api-kalkulator';
+
+    // URL Web App Apps Script untuk sync Sheets
     const GAS_URL = "https://script.google.com/macros/s/AKfycbyUbHeH5sD5KI1-dCGLNjGzLzEunKYEvuaHw003NHBMqGcXSKnl5SN54ent1UpOvBSm/exec";
 
-    let currentUser = null; // Email user aktif
-    let userCredits = 0;   // Kuota sisa hitung
+    // STATE USER SESSION SERVER
+    let currentUser = {
+      isLoggedIn: false,
+      userId: '',
+      email: '',
+      name: '',
+      saldo: 0
+    };
 
     let inventory = [
       { room: 'Lab Komputer 1', name: 'AC Split 1.5 PK', watt: 1200, qty: 4, hours: 6, days: 20 },
@@ -601,133 +640,254 @@
 
     let customEventGear = [];
 
-    // MANAJEMEN USER & KREDIT (LOCALSTORAGE SYNC)
-    function initUserSession() {
-      const savedEmail = localStorage.getItem('calc_user_email');
-      if (savedEmail) {
-        currentUser = savedEmail;
-        const savedUsers = JSON.parse(localStorage.getItem('calc_users_db') || '{}');
-        userCredits = savedUsers[savedEmail] !== undefined ? savedUsers[savedEmail] : 5;
-      } else {
-        currentUser = null;
-        userCredits = 0;
+    // ================= 1. SYSTEM SESSION & SERVER BALANCE INTEGRATION =================
+    function initServerUserSession() {
+      const savedSession = localStorage.getItem('calc_server_user_db');
+      if (savedSession) {
+        try {
+          currentUser = JSON.parse(savedSession);
+          if (currentUser.email) {
+            fetchUserBalanceFromServer(currentUser.email);
+          }
+        } catch(e) {
+          console.error("Session parse error:", e);
+        }
       }
-      updateUserUI();
+      renderUserSessionUI();
     }
 
-    function updateUserUI() {
-      const emailBadge = document.getElementById('userEmailBadge');
-      const creditDisplay = document.getElementById('creditBalanceDisplay');
+    async function fetchUserBalanceFromServer(userEmail) {
+      if (!userEmail) return;
+      try {
+        const res = await fetch(`${API_BASE_URL}/check-user.php`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: userEmail })
+        });
 
-      if (currentUser) {
-        emailBadge.innerText = currentUser;
-        emailBadge.title = currentUser;
-      } else {
-        emailBadge.innerText = 'Belum Login';
-        emailBadge.title = 'Klik untuk Login';
+        const data = await res.json();
+        if (data.success) {
+          currentUser.isLoggedIn = true;
+          currentUser.email = userEmail;
+          currentUser.userId = userEmail;
+          currentUser.saldo = parseInt(data.saldo) || 0;
+          currentUser.name = userEmail.split('@')[0];
+          saveServerUserSession();
+        }
+      } catch (err) {
+        console.error("Gagal menyinkronkan saldo dari database server:", err);
       }
-
-      creditDisplay.innerText = userCredits;
     }
 
-    function openLoginModal() {
-      document.getElementById('loginModal').classList.remove('hidden');
-    }
+    function renderUserSessionUI() {
+      const loggedOutView = document.getElementById('loggedOutView');
+      const loggedInView = document.getElementById('loggedInView');
+      const userNameText = document.getElementById('userNameText');
+      const userSaldoText = document.getElementById('userSaldoText');
+      const expiredBanner = document.getElementById('expiredBanner');
 
-    function closeLoginModal() {
-      document.getElementById('loginModal').classList.add('hidden');
-    }
+      if (currentUser.isLoggedIn && currentUser.email) {
+        loggedOutView.classList.add('hidden');
+        loggedInView.classList.remove('hidden');
+        userNameText.innerText = currentUser.name || currentUser.email.split('@')[0];
+        userSaldoText.innerText = `Saldo: Rp ${(currentUser.saldo || 0).toLocaleString('id-ID')}`;
 
-    function handleLoginSubmit() {
-      const emailInput = document.getElementById('loginEmailInput').value.trim().toLowerCase();
-
-      if (!emailInput || !emailInput.includes('@')) {
-        alert("⚠️ Mohon masukkan alamat email yang valid!");
-        return;
-      }
-
-      const savedUsers = JSON.parse(localStorage.getItem('calc_users_db') || '{}');
-
-      if (savedUsers[emailInput] === undefined) {
-        // User baru -> Dapat bonus 5x hitung
-        savedUsers[emailInput] = 5;
-        userCredits = 5;
-        alert(`🎉 Selamat datang! Email ${emailInput} mendapatkan Bonus Gratis 5x Hitung (Nilai Rp5.000).`);
-      } else {
-        // User lama -> Muat sisa kredit yang ada
-        userCredits = savedUsers[emailInput];
-        alert(`👋 Selamat datang kembali, ${emailInput}! Sisa kredit Anda: ${userCredits}x Hitung.`);
-      }
-
-      currentUser = emailInput;
-      localStorage.setItem('calc_user_email', currentUser);
-      localStorage.setItem('calc_users_db', JSON.stringify(savedUsers));
-
-      updateUserUI();
-      closeLoginModal();
-      calculateAll();
-    }
-
-    function deductCredit() {
-      if (!currentUser) {
-        openLoginModal();
-        return false;
-      }
-
-      if (userCredits <= 0) {
-        alert("⚠️ Kuota hitung Anda telah habis! Silakan lakukan Top Up untuk melanjutkan simulasi.");
-        openTopUpModal();
-        return false;
-      }
-
-      userCredits--;
-      const savedUsers = JSON.parse(localStorage.getItem('calc_users_db') || '{}');
-      savedUsers[currentUser] = userCredits;
-      localStorage.setItem('calc_users_db', JSON.stringify(savedUsers));
-
-      updateUserUI();
-      return true;
-    }
-
-    // TOP UP & INTEGRASI MIDTRANS PRODUCTION
-    function openTopUpModal() {
-      if (!currentUser) {
-        alert("Silakan masuk dengan email Anda terlebih dahulu.");
-        openLoginModal();
-        return;
-      }
-      document.getElementById('topUpModal').classList.remove('hidden');
-    }
-
-    function closeTopUpModal() {
-      document.getElementById('topUpModal').classList.add('hidden');
-    }
-
-    function processMidtransPayment(grossAmount, addCredits) {
-      if (!currentUser) {
-        alert("Silakan login dengan email terlebih dahulu!");
-        openLoginModal();
-        return;
-      }
-
-      if (typeof snap !== 'undefined' && snap.pay) {
-        alert(`💳 Membuka Gerbang Pembayaran Midtrans Production:\n\nPaket: ${addCredits}x Hitung\nTotal: Rp ${grossAmount.toLocaleString('id-ID')}\nEmail: ${currentUser}`);
-
-        // FALLBACK SIMULASI TESTING SUKSES PEMBAYARAN MIDTRANS:
-        const confirmPayment = confirm("Simulasi Transaksi Midtrans: Tekan OK jika Pembayaran BERHASIL.");
-        if (confirmPayment) {
-          userCredits += addCredits;
-          const savedUsers = JSON.parse(localStorage.getItem('calc_users_db') || '{}');
-          savedUsers[currentUser] = userCredits;
-          localStorage.setItem('calc_users_db', JSON.stringify(savedUsers));
-
-          updateUserUI();
-          closeTopUpModal();
-          alert(`✅ Top Up Berhasil! Kuota ${addCredits}x Hitung telah ditambahkan ke akun ${currentUser}. Sisa kredit: ${userCredits}x`);
+        if (currentUser.saldo < 1000) {
+          if (expiredBanner) expiredBanner.classList.remove('hidden');
+        } else {
+          if (expiredBanner) expiredBanner.classList.add('hidden');
         }
       } else {
-        alert("❌ Midtrans Snap SDK belum siap atau tidak terhubung.");
+        loggedOutView.classList.remove('hidden');
+        loggedInView.classList.add('hidden');
+        if (expiredBanner) expiredBanner.classList.add('hidden');
       }
+    }
+
+    function saveServerUserSession() {
+      localStorage.setItem('calc_server_user_db', JSON.stringify(currentUser));
+      renderUserSessionUI();
+    }
+
+    async function loginWithEmail() {
+      const emailInput = document.getElementById('loginEmailInput').value.trim();
+      const salesCodeInput = document.getElementById('loginSalesCodeInput').value.trim();
+
+      if (!emailInput || !emailInput.includes('@')) {
+        showToast("⚠️ Silakan masukkan alamat email yang valid!");
+        return;
+      }
+      await processUserLogin(emailInput, salesCodeInput);
+    }
+
+    async function processUserLogin(email, salesCode = '') {
+      showToast("Menghubungkan ke server...");
+      try {
+        const response = await fetch(`${API_BASE_URL}/check-user.php`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            email: email,
+            sales_code: salesCode 
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          currentUser = {
+            isLoggedIn: true,
+            userId: email,
+            email: email,
+            name: email.split('@')[0],
+            saldo: parseInt(data.saldo) || 0,
+            salesCode: data.salesCode || ''
+          };
+
+          saveServerUserSession();
+          closeModal('loginModal');
+
+          if (data.isNew) {
+            let msg = "🎉 Selamat datang! Bonus saldo awal Rp 5.000 telah ditambahkan.";
+            if (data.salesCode) {
+              msg += ` Terikat Sales: ${data.salesCode}`;
+            }
+            showToast(msg);
+          } else {
+            showToast(`👋 Login berhasil! Saldo Anda: Rp ${currentUser.saldo.toLocaleString('id-ID')}`);
+          }
+          calculateAll();
+        } else {
+          showToast(data.message || "❌ Gagal melakukan login ke server.");
+        }
+      } catch (err) {
+        console.error("Login Error:", err);
+        showToast("❌ Gagal terhubung ke database server.");
+      }
+    }
+
+    function logoutUser() {
+      currentUser = {
+        isLoggedIn: false,
+        userId: '',
+        email: '',
+        name: '',
+        saldo: 0
+      };
+      localStorage.removeItem('calc_server_user_db');
+      renderUserSessionUI();
+      showToast("Anda telah keluar.");
+    }
+
+    // ================= 2. CREDIT DEDUCTION VIA API (potong-saldo.php) =================
+    async function triggerActionWithCredit(callbackAction) {
+      if (!currentUser.isLoggedIn || !currentUser.email) {
+        openLoginModal();
+        return;
+      }
+
+      showToast("Memproses pemotongan saldo...");
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/potong-saldo.php`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: currentUser.email })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          currentUser.saldo = parseInt(result.sisaSaldo) || 0;
+          saveServerUserSession();
+
+          if (typeof callbackAction === 'function') {
+            callbackAction();
+          }
+        } else {
+          showToast(result.message || "⚠️ Saldo tidak cukup, silakan Top Up.");
+          openTopUpModal();
+        }
+      } catch (err) {
+        console.error("Error potong-saldo:", err);
+        showToast("Gagal memotong saldo. Periksa koneksi internet Anda.");
+      }
+    }
+
+    // ================= 3. MIDTRANS SNAP TOP UP PROCESSOR =================
+    async function processCreditPayment(amount) {
+      if (!currentUser.isLoggedIn || !currentUser.email) {
+        showToast("Silakan login dengan email terlebih dahulu!");
+        openLoginModal();
+        return;
+      }
+
+      showToast(`Menyiapkan gerbang pembayaran Midtrans Rp ${amount.toLocaleString('id-ID')}...`);
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/create-snap-token.php`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: amount,
+            email: currentUser.email,
+            custName: currentUser.name || currentUser.email,
+            custPhone: '08120000000'
+          })
+        });
+
+        const result = await response.json();
+        const snapToken = result.token || result.snapToken;
+
+        if (!snapToken) {
+          throw new Error(result.message || "Gagal mendapatkan Snap Token dari server.");
+        }
+
+        if (window.snap && typeof window.snap.pay === 'function') {
+          window.snap.pay(snapToken, {
+            onSuccess: function(res) {
+              showToast("✅ Pembayaran Berhasil! Mengupdate saldo...");
+              fetchUserBalanceFromServer(currentUser.email);
+              closeModal('topUpModal');
+            },
+            onPending: function(res) {
+              showToast("⏳ Menunggu penyelesaian pembayaran...");
+            },
+            onError: function(res) {
+              showToast("❌ Pembayaran gagal diproses!");
+            },
+            onClose: function() {
+              showToast("Popup pembayaran Midtrans ditutup.");
+            }
+          });
+        } else {
+          showToast("❌ Midtrans Snap SDK belum dimuat di halaman.");
+        }
+      } catch (err) {
+        console.error("Midtrans Error:", err);
+        showToast("Gagal terhubung ke gateway pembayaran.");
+      }
+    }
+
+    // ================= 4. APP NAVIGATION & CORE LOGIC =================
+    function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+    function openLoginModal() { openModal('loginModal'); }
+    function openTopUpModal() { 
+      if (!currentUser.isLoggedIn) {
+        openLoginModal();
+        return;
+      }
+      openModal('topUpModal'); 
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastMsg').innerText = msg;
+      toast.classList.remove('opacity-0', 'pointer-events-none');
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'pointer-events-none');
+      }, 3000);
     }
 
     function switchTab(tabIndex) {
@@ -834,11 +994,11 @@
         div.className = "p-3 bg-blue-50/50 rounded-lg border border-blue-200 flex items-center justify-between gap-3";
         div.innerHTML = `
           <div class="flex items-center gap-3 flex-1">
-            <input type="checkbox" ${item.active ? 'checked' : ''} onchange="customEventGear[${index}].active = this.checked; calculateEvent();" class="w-4 h-4 text-blue-600 rounded no-print">
-            <input type="text" value="${item.name}" onchange="customEventGear[${index}].name = this.value; calculateEvent();" class="w-full bg-transparent border-b border-blue-300 font-bold text-slate-800 text-xs focus:outline-none">
+            <input type="checkbox" ${item.active ? 'checked' : ''} onchange="customEventGear[${index}].active = this.checked; triggerActionWithCredit(calculateEvent);" class="w-4 h-4 text-blue-600 rounded no-print">
+            <input type="text" value="${item.name}" onchange="customEventGear[${index}].name = this.value; triggerActionWithCredit(calculateEvent);" class="w-full bg-transparent border-b border-blue-300 font-bold text-slate-800 text-xs focus:outline-none">
           </div>
           <div class="flex items-center gap-2">
-            <input type="number" value="${item.watt}" onchange="customEventGear[${index}].watt = parseFloat(this.value)||0; calculateEvent();" class="w-20 bg-white border border-slate-300 rounded px-2 py-1 text-right font-medium text-xs">
+            <input type="number" value="${item.watt}" onchange="customEventGear[${index}].watt = parseFloat(this.value)||0; triggerActionWithCredit(calculateEvent);" class="w-20 bg-white border border-slate-300 rounded px-2 py-1 text-right font-medium text-xs">
             <span class="text-slate-500 font-medium text-xs">Watt</span>
             <button onclick="deleteCustomEventItem(${index})" class="text-rose-500 hover:text-rose-700 ml-1 no-print"><i class="fa-solid fa-trash"></i></button>
           </div>
@@ -871,7 +1031,6 @@
       document.getElementById('totalWatts').innerText = totalInstantWatt.toLocaleString('id-ID') + ' Watt';
       document.getElementById('capacityCaption').innerText = `Daya Nyata Maksimum PLN: ${realCapacityWatt.toLocaleString('id-ID')} Watt`;
 
-      // Kalkulasi Estimasi Ruangan Aktif untuk Tab 1 (Rata-rata 1.300 Watt per ruangan KBM)
       const estRooms = Math.round(totalInstantWatt / 1300) || 0;
       document.getElementById('roomEstimateCaption').innerText = `~${estRooms} Ruangan KBM Aktif`;
 
@@ -929,7 +1088,6 @@
 
       document.getElementById('simBaseLoad').innerText = baseLoad.toLocaleString('id-ID') + ' W';
 
-      // Sinkronisasi data ke Tampilan Lampiran Cetak PDF
       document.getElementById('printEventDayType').innerText = isWeekend ? 'Hari Libur / Akhir Pekan (KBM Kelas Reguler OFF)' : 'Hari Kerja / Efektif Sekolah';
       document.getElementById('printVipCount').innerText = isWeekend ? `${activeVipRooms} Ruangan` : 'N/A (Hari Kerja)';
       document.getElementById('printVipWatt').innerText = isWeekend ? `${(activeVipRooms * 1300).toLocaleString('id-ID')} Watt` : '0 Watt';
@@ -974,7 +1132,6 @@
       document.getElementById('eventMarginWatt').innerText = '+' + Math.round(marginWatt).toLocaleString('id-ID') + ' Watt';
       document.getElementById('eventTotalWatt').innerText = Math.round(grandTotalWatt).toLocaleString('id-ID') + ' Watt';
 
-      // PARAMETER & KALKULASI RAB BIAYA EVENT
       const eventHours = parseFloat(document.getElementById('eventHours').value) || 8;
       const solarPrice = parseFloat(document.getElementById('solarPrice').value) || 15000;
 
@@ -1075,18 +1232,17 @@
       }
     }
 
-    // FUNGSI MEMUAT DAFTAR SEKOLAH DARI DATABASE
     function fetchSavedSchools() {
       const modal = document.getElementById('schoolModal');
       const dropdown = document.getElementById('savedSchoolsDropdown');
-      modal.classList.remove('hidden');
+      openModal('schoolModal');
       dropdown.innerHTML = '<option value="">-- Memuat daftar... --</option>';
 
       if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
           .withSuccessHandler(populateSchoolDropdown)
           .withFailureHandler(function(err) {
-            alert("❌ Gagal memuat daftar sekolah: " + err);
+            showToast("❌ Gagal memuat daftar sekolah: " + err);
           })
           .getSchoolList();
       } else {
@@ -1094,7 +1250,7 @@
           .then(res => res.json())
           .then(data => populateSchoolDropdown(data))
           .catch(err => {
-            alert("❌ Gagal terhubung ke server database: " + err);
+            showToast("❌ Gagal terhubung ke server database: " + err);
           });
       }
     }
@@ -1119,31 +1275,31 @@
     function loadSelectedSchool() {
       const schoolName = document.getElementById('savedSchoolsDropdown').value;
       if (!schoolName) {
-        alert("Silakan pilih sekolah terlebih dahulu.");
+        showToast("Silakan pilih sekolah terlebih dahulu.");
         return;
       }
 
-      // Potong kredit 1x saat memuat data sekolah baru
-      if (!deductCredit()) return;
-
-      if (typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run
-          .withSuccessHandler(applyLoadedSchoolData)
-          .withFailureHandler(function(err) {
-            alert("❌ Gagal mengambil data sekolah: " + err);
-          })
-          .loadSchoolData(schoolName);
-      } else {
-        fetch(GAS_URL + "?action=loadSchool&name=" + encodeURIComponent(schoolName))
-          .then(res => res.json())
-          .then(data => applyLoadedSchoolData(data))
-          .catch(err => alert("❌ Gagal mengambil data sekolah: " + err));
-      }
+      // Potong saldo Rp 1.000 saat memuat data sekolah
+      triggerActionWithCredit(() => {
+        if (typeof google !== 'undefined' && google.script && google.script.run) {
+          google.script.run
+            .withSuccessHandler(applyLoadedSchoolData)
+            .withFailureHandler(function(err) {
+              showToast("❌ Gagal mengambil data sekolah: " + err);
+            })
+            .loadSchoolData(schoolName);
+        } else {
+          fetch(GAS_URL + "?action=loadSchool&name=" + encodeURIComponent(schoolName))
+            .then(res => res.json())
+            .then(data => applyLoadedSchoolData(data))
+            .catch(err => showToast("❌ Gagal mengambil data sekolah: " + err));
+        }
+      });
     }
 
     function applyLoadedSchoolData(data) {
       if (!data || !data.inventory) {
-        alert("❌ Data sekolah tidak ditemukan atau kosong.");
+        showToast("❌ Data sekolah tidak ditemukan atau kosong.");
         return;
       }
 
@@ -1154,12 +1310,8 @@
       inventory = data.inventory;
 
       renderInventory();
-      closeSchoolModal();
-      alert("✅ Data inventaris " + data.schoolName + " berhasil dimuat ke aplikasi!");
-    }
-
-    function closeSchoolModal() {
-      document.getElementById('schoolModal').classList.add('hidden');
+      closeModal('schoolModal');
+      showToast("✅ Data inventaris " + data.schoolName + " berhasil dimuat!");
     }
 
     function saveToSheets() {
@@ -1173,12 +1325,12 @@
       if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
           .withSuccessHandler(function(res) {
-            alert("✅ " + res.message);
+            showToast("✅ " + res.message);
             btnSave.innerHTML = '<i class="fa-solid fa-file-excel"></i> 💾 Simpan ke Sheets';
             btnSave.disabled = false;
           })
           .withFailureHandler(function(err) {
-            alert("❌ Gagal menyimpan: " + err);
+            showToast("❌ Gagal menyimpan: " + err);
             btnSave.innerHTML = '<i class="fa-solid fa-file-excel"></i> 💾 Simpan ke Sheets';
             btnSave.disabled = false;
           })
@@ -1197,12 +1349,12 @@
           body: JSON.stringify(payload)
         })
         .then(() => {
-          alert("✅ Data inventaris " + schoolName + " berhasil diperbarui di Google Sheets!");
+          showToast("✅ Data inventaris " + schoolName + " berhasil diperbarui di Google Sheets!");
           btnSave.innerHTML = '<i class="fa-solid fa-file-excel"></i> 💾 Simpan ke Sheets';
           btnSave.disabled = false;
         })
         .catch(err => {
-          alert("❌ Gagal terhubung ke Google Sheets: " + err);
+          showToast("❌ Gagal terhubung ke Google Sheets: " + err);
           btnSave.innerHTML = '<i class="fa-solid fa-file-excel"></i> 💾 Simpan ke Sheets';
           btnSave.disabled = false;
         });
@@ -1213,7 +1365,7 @@
       const today = new Date();
       document.getElementById('printDate').innerText = today.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
       
-      initUserSession();
+      initServerUserSession();
       renderInventory();
     };
   </script>
