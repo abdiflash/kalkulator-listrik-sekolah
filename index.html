@@ -1197,7 +1197,14 @@
       }
     }
 
+    // ================= 5. GOOGLE SHEETS INTEGRATION PER AKUN =================
     function fetchSavedSchools() {
+      if (!currentUser.isLoggedIn || !currentUser.email) {
+        showToast("Silakan login dengan email terlebih dahulu!");
+        openLoginModal();
+        return;
+      }
+
       const modal = document.getElementById('schoolModal');
       const dropdown = document.getElementById('savedSchoolsDropdown');
       openModal('schoolModal');
@@ -1209,9 +1216,9 @@
           .withFailureHandler(function(err) {
             showToast("❌ Gagal memuat daftar sekolah: " + err);
           })
-          .getSchoolList();
+          .getSchoolList(currentUser.email);
       } else {
-        fetch(GAS_URL + "?action=getSchools")
+        fetch(GAS_URL + "?action=getSchools&email=" + encodeURIComponent(currentUser.email))
           .then(res => res.json())
           .then(data => populateSchoolDropdown(data))
           .catch(err => {
@@ -1252,9 +1259,9 @@
             .withFailureHandler(function(err) {
               showToast("❌ Gagal mengambil data sekolah: " + err);
             })
-            .loadSchoolData(schoolName);
+            .loadSchoolData(schoolName, currentUser.email);
         } else {
-          fetch(GAS_URL + "?action=loadSchool&name=" + encodeURIComponent(schoolName))
+          fetch(GAS_URL + "?action=loadSchool&name=" + encodeURIComponent(schoolName) + "&email=" + encodeURIComponent(currentUser.email))
             .then(res => res.json())
             .then(data => applyLoadedSchoolData(data))
             .catch(err => showToast("❌ Gagal mengambil data sekolah: " + err));
@@ -1280,6 +1287,12 @@
     }
 
     function saveToSheets() {
+      if (!currentUser.isLoggedIn || !currentUser.email) {
+        showToast("Silakan login terlebih dahulu!");
+        openLoginModal();
+        return;
+      }
+
       const schoolName = document.getElementById('schoolName').value || 'Nama Sekolah / Instansi';
       const plnCapacity = document.getElementById('plnCapacity').value;
       const btnSave = document.getElementById('btnSaveSheets');
@@ -1299,12 +1312,13 @@
             btnSave.innerHTML = '<i class="fa-solid fa-file-excel"></i> 💾 Simpan ke Sheets';
             btnSave.disabled = false;
           })
-          .saveDataToSheet(schoolName, plnCapacity, inventory);
+          .saveDataToSheet(schoolName, plnCapacity, inventory, currentUser.email);
       } else {
         const payload = {
           schoolName: schoolName,
           plnCapacity: plnCapacity,
-          inventory: inventory
+          inventory: inventory,
+          email: currentUser.email
         };
 
         fetch(GAS_URL, {
