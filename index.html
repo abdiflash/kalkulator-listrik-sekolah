@@ -191,21 +191,39 @@
     <!-- ================= TAB 2: SIMULASI EVENT ================= -->
     <div id="tab2" class="hidden space-y-6">
       
-      <!-- BASE LOAD BANNER -->
-      <div class="bg-slate-900 text-white p-5 rounded-xl shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-4 print-card">
-        <div>
-          <span class="bg-blue-500/20 text-blue-300 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-blue-500/30 no-print">Auto Sync Dari Tab 1</span>
-          <h3 class="font-bold text-lg mt-1">Kapasitas Gedung & Base Load Sekolah</h3>
-          <p class="text-xs text-slate-400 mt-0.5">Sistem mengunci beban rutin sekolah yang tetap harus menyala saat event (Server, CCTV, TU, Pompa).</p>
-        </div>
-        <div class="flex items-center gap-6 border-t md:border-t-0 md:border-l border-slate-700 pt-3 md:pt-0 md:pl-6">
+      <!-- BASE LOAD BANNER WITH WEEKEND & VIP ROOM TOGGLE -->
+      <div class="bg-slate-900 text-white p-5 rounded-xl shadow-md space-y-3 print-card">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <p class="text-[10px] text-slate-400">Kapasitas PLN Nyata</p>
-            <p id="simPlnCapacity" class="font-black text-xl text-emerald-400">26.400 W</p>
+            <span class="bg-blue-500/20 text-blue-300 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-blue-500/30 no-print">Auto Sync Dari Tab 1</span>
+            <h3 class="font-bold text-lg mt-1">Kapasitas Gedung & Base Load Sekolah</h3>
+            <p class="text-xs text-slate-400 mt-0.5">Sistem mengunci beban rutin sekolah yang tetap harus menyala saat event.</p>
           </div>
-          <div>
-            <p class="text-[10px] text-slate-400">Base Load Gedung</p>
-            <p id="simBaseLoad" class="font-black text-xl text-yellow-400">4.000 W</p>
+          <div class="flex items-center gap-6 border-t md:border-t-0 md:border-l border-slate-700 pt-3 md:pt-0 md:pl-6">
+            <div>
+              <p class="text-[10px] text-slate-400">Kapasitas PLN Nyata</p>
+              <p id="simPlnCapacity" class="font-black text-xl text-emerald-400">26.400 W</p>
+            </div>
+            <div>
+              <p class="text-[10px] text-slate-400">Base Load Gedung</p>
+              <p id="simBaseLoad" class="font-black text-xl text-yellow-400">4.000 W</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- OPSI HARI LIBUR & RUANG TRANSIT VIP -->
+        <div class="border-t border-slate-700/80 pt-3 flex flex-wrap items-center justify-between gap-3 text-xs no-print">
+          <div class="flex items-center gap-2">
+            <input type="checkbox" id="chkWeekendEvent" checked onchange="calculateEvent()" class="w-4 h-4 text-blue-500 rounded cursor-pointer">
+            <label for="chkWeekendEvent" class="text-yellow-300 font-semibold cursor-pointer">
+              ⚡ Event Hari Libur / Akhir Pekan (KBM & Kelas Reguler Libur)
+            </label>
+          </div>
+          
+          <div id="vipRoomContainer" class="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded border border-slate-700">
+            <span class="text-slate-300">Ruang Rias / VIP / Transit Aktif:</span>
+            <input type="number" id="vipRoomCount" value="3" min="0" max="20" onchange="calculateEvent()" class="w-12 bg-slate-900 border border-slate-600 rounded text-center text-white font-bold py-0.5 focus:outline-none focus:border-blue-500">
+            <span class="text-slate-400 text-[11px]">Ruangan</span>
           </div>
         </div>
       </div>
@@ -538,17 +556,37 @@
       }
 
       document.getElementById('simPlnCapacity').innerText = realCapacityWatt.toLocaleString('id-ID') + ' W';
-      const baseLoad = Math.round(totalInstantWatt * 0.2) || 3000;
-      document.getElementById('simBaseLoad').innerText = baseLoad.toLocaleString('id-ID') + ' W';
+      calculateEvent();
     }
 
     function calculateEvent() {
       const vaCapacity = parseFloat(document.getElementById('plnCapacity').value);
       const realCapacityWatt = vaCapacity * 0.8;
       
-      let baseLoad = 3000;
-      const baseText = document.getElementById('simBaseLoad').innerText.replace(/\D/g, '');
-      if (baseText) baseLoad = parseInt(baseText);
+      const isWeekend = document.getElementById('chkWeekendEvent').checked;
+      const vipContainer = document.getElementById('vipRoomContainer');
+      
+      let baseLoad = 0;
+
+      if (isWeekend) {
+        vipContainer.classList.remove('hidden');
+        const activeVipRooms = parseInt(document.getElementById('vipRoomCount').value) || 0;
+        
+        // Beban esensial rutin gedung (Server, CCTV, Pompa, Lampu Koridor) = ~2.000 W
+        // Beban per ruang transit/VIP (AC 1.5 PK + Lampu) = ~1.300 W per ruangan
+        const essentialWatt = 2000;
+        const vipRoomsWatt = activeVipRooms * 1300;
+        
+        baseLoad = essentialWatt + vipRoomsWatt;
+      } else {
+        vipContainer.classList.add('hidden');
+        // Hari kerja biasa: gunakan 20% dari total inventaris harian sekolah
+        let totalInstantWatt = 0;
+        inventory.forEach(item => { totalInstantWatt += (item.watt * item.qty); });
+        baseLoad = Math.round(totalInstantWatt * 0.2) || 3000;
+      }
+
+      document.getElementById('simBaseLoad').innerText = baseLoad.toLocaleString('id-ID') + ' W';
 
       let eventLoad = 0;
 
@@ -601,7 +639,7 @@
         vBadge.className = "px-2.5 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-emerald-600 text-white";
         vBadge.innerText = "AMAN! GUNAKAN LISTRIK PLN";
         vTitle.innerText = "TIDAK PERLU SEWA GENSET";
-        vSub.innerText = "Kapasitas daya PLN sekolah sangat mencukupi untuk mendukung seluruh peralatan event.";
+        vSub.innerText = "Kapasitas daya PLN sekolah mencukupi untuk mendukung seluruh peralatan event dan ruang transit.";
         recKva.innerText = "Tidak Dibutuhkan";
         recFuel.innerText = "0 Liter (Hemat Anggaran)";
       } else if (grandTotalWatt <= realCapacityWatt) {
