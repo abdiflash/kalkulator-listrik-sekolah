@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kalkulator Listrik Sekolah & Simulasi Event Pro</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- MIDTRANS SNAP SDK (PRODUCTION) -->
+  <script type="text/javascript" 
+    src="https://app.midtrans.com/snap/snap.js" 
+    data-client-key="Mid-client-MK-5yLAVCdP0Yd_o"></script>
+
+  <!-- SHEETJS UNTUK IMPORT EXCEL / CSV -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <style>
+    @media print {
+      .no-print { display: none !important; }
+      .print-only { display: block !important; }
+      body { background: white !important; color: black !important; padding: 0 !important; }
+      main { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
+      .print-card { border: 1px solid #cbd5e1 !important; box-shadow: none !important; page-break-inside: avoid; }
+      input, select { border: none !important; background: transparent !important; appearance: none !important; font-weight: bold !important; }
+    }
+    .print-only { display: none; }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen pb-12">
+
+  <!-- BANNER MASA LANGGANAN HABIS -->
+  <div id="expiredBanner" class="hidden bg-rose-600 text-white py-2 px-4 text-center font-bold text-xs shadow-md no-print sticky top-0 z-50">
+    <i class="fa-solid fa-triangle-exclamation text-amber-300 mr-1"></i> Masa Aktif Langganan Anda Telah Habis. Perpanjang Akses Rp 49.000 / 30 Hari untuk Bebas Simulasi!
+    <button onclick="openTopUpModal()" class="ml-2 bg-amber-400 text-slate-950 text-[11px] font-extrabold px-2.5 py-0.5 rounded shadow hover:bg-amber-300">Perpanjang Sekarang</button>
+  </div>
+
+  <!-- HEADER & APP CONFIG BAR -->
+  <header class="bg-slate-900 text-white shadow-md sticky top-0 z-40 no-print">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="bg-blue-600 p-2.5 rounded-lg text-xl">
+          <i class="fa-solid fa-bolt"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-lg leading-tight flex items-center gap-1.5">
+            Kalkulator Listrik Sekolah <span class="bg-amber-400 text-slate-900 text-[10px] font-black px-1.5 py-0.5 rounded">PRO</span>
+          </h1>
+          <p class="text-xs text-slate-400">Audit Harian & Simulasi Keputusan Event/Genset</p>
+        </div>
+      </div>
+
+      <!-- Quick Settings, User & Subscription Bar -->
+      <div class="flex flex-wrap items-center gap-3 text-sm">
+        <div class="flex items-center gap-1.5">
+          <div>
+            <label class="block text-[10px] text-slate-400">Nama Sekolah / Instansi</label>
+            <input type="text" id="schoolName" value="SMAN 1 Nusantara" onchange="calculateAll()" class="bg-slate-800 text-white px-2.5 py-1 rounded border border-slate-700 focus:outline-none focus:border-blue-500 font-medium">
+          </div>
+          <button onclick="fetchSavedSchools()" class="mt-3.5 px-2.5 py-1 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded transition flex items-center gap-1 shadow-sm" title="Muat Data Sekolah Tersimpan">
+            <i class="fa-solid fa-folder-open"></i> Buka Data
+          </button>
+        </div>
+
+        <div>
+          <label class="block text-[10px] text-slate-400">Daya Terpasang PLN</label>
+          <select id="plnCapacity" onchange="calculateAll()" class="bg-slate-800 text-white px-2 py-1 rounded border border-slate-700 focus:outline-none focus:border-blue-500 font-medium text-xs">
+            <option value="6600">6.600 VA (6,6 kVA)</option>
+            <option value="11000">11.000 VA (11 kVA)</option>
+            <option value="16500">16.500 VA (16,5 kVA)</option>
+            <option value="22000">22.000 VA (22 kVA)</option>
+            <option value="33000" selected>33.000 VA (33 kVA - S-2)</option>
+            <option value="44000">44.000 VA (44 kVA)</option>
+            <option value="53000">53.000 VA (53 kVA)</option>
+            <option value="66000">66.000 VA (66 kVA)</option>
+            <option value="82500">82.500 VA (82,5 kVA)</option>
+            <option value="105000">105.000 VA (105 kVA)</option>
+            <option value="131000">131.000 VA (131 kVA)</option>
+            <option value="147000">147.000 VA (147 kVA)</option>
+            <option value="164000">164.000 VA (164 kVA)</option>
+            <option value="197000">197.000 VA (197 kVA)</option>
+            <option value="250000">250.000 VA (250 kVA - S-3)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[10px] text-slate-400">Tarif / kWh + PPJ</label>
+          <div class="flex items-center bg-slate-800 rounded border border-slate-700 px-2 py-1">
+            <span class="text-xs text-slate-400 mr-1">Rp</span>
+            <input type="number" id="tariffRate" value="1500" onchange="calculateAll()" class="bg-transparent text-white w-16 focus:outline-none text-sm font-medium">
+          </div>
+        </div>
+
+        <!-- USER BADGE & SUBSCRIPTION STATUS BAR -->
+        <div id="userAccountContainer" class="border-l border-slate-700 pl-3 flex items-center gap-2">
+          <div id="loggedOutView">
+            <button onclick="openLoginModal()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition shadow">
+              <i class="fa-solid fa-user"></i> Login / Masuk
+            </button>
+          </div>
+
+          <div id="loggedInView" class="hidden flex items-center gap-2">
+            <div class="bg-slate-800 border border-slate-700 text-slate-200 px-2.5 py-1 rounded text-xs flex items-center gap-1.5">
+              <i class="fa-solid fa-user-circle text-blue-400"></i>
+              <span id="userNameText" class="max-w-[100px] truncate font-medium">User</span>
+              <button onclick="logoutUser()" class="text-rose-400 hover:text-rose-300 ml-1" title="Keluar"><i class="fa-solid fa-right-from-bracket"></i></button>
+            </div>
+
+            <div onclick="openTopUpModal()" class="cursor-pointer bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 px-2.5 py-1 rounded flex items-center gap-2 text-xs">
+              <i class="fa-solid fa-calendar-check text-amber-400"></i>
+              <span class="font-bold" id="userSubText">Aktif s/d: -</span>
+            </div>
+
+            <button onclick="openTopUpModal()" class="bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black text-xs px-3 py-1 rounded shadow-md transition flex items-center gap-1">
+              <i class="fa-solid fa-crown"></i> Langganan
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TAB NAVIGATION -->
+    <div class="bg-slate-800 border-t border-slate-700 px-4">
+      <div class="max-w-7xl mx-auto flex gap-2">
+        <button id="btnTab1" onclick="switchTab(1)" class="px-5 py-2.5 text-sm font-semibold border-b-2 border-blue-500 text-blue-400 flex items-center gap-2">
+          <i class="fa-solid fa-chart-pie"></i> 📊 Audit Harian & Tagihan
+        </button>
+        <button id="btnTab2" onclick="switchTab(2)" class="px-5 py-2.5 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2">
+          <i class="fa-solid fa-campground"></i> 🎪 Simulasi Event
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MODAL LOGIN / MASUK EMAIL -->
+  <div id="loginModal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4 no-print">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 space-y-4 text-slate-800 shadow-2xl border border-slate-200 text-center">
+      <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto text-2xl shadow-inner">
+        <i class="fa-solid fa-user-lock"></i>
+      </div>
+      <div>
+        <h3 class="font-extrabold text-xl text-slate-900">Masuk dengan Email</h3>
+        <p class="text-xs text-slate-500 mt-1">
+          Pengguna baru otomatis mendapatkan <strong class="text-emerald-600">Akses Gratis Uji Coba 1 Hari</strong>!
+        </p>
+      </div>
+      <div class="space-y-3 text-left">
+        <div>
+          <label class="text-xs font-semibold text-slate-700 block mb-1">Alamat Email Sekolah</label>
+          <input type="email" id="loginEmailInput" placeholder="nama@sekolah.sch.id" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none">
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-700 block mb-1">Passcode testing (Opsional)</label>
+          <input type="text" id="loginSalesCodeInput" placeholder="Contoh: OWNER2026" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-bold text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none uppercase">
+        </div>
+        <button onclick="loginWithEmail()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl py-3 px-4 flex items-center justify-center gap-2 transition shadow-md">
+          <i class="fa-solid fa-right-to-bracket"></i> Masuk / Daftar Akun
+        </button>
+      </div>
+      <p class="text-[11px] text-slate-400 italic">Status langganan tersimpan aman di edueasy.id</p>
+      <button onclick="closeModal('loginModal')" class="text-xs text-slate-500 hover:underline">Tutup</button>
+    </div>
+  </div>
+
+  <!-- MODAL LANGGANAN MIDTRANS SNAP -->
+  <div id="topUpModal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4 no-print">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-5 text-slate-800 shadow-2xl border border-amber-200">
+      <div class="flex justify-between items-center border-b border-slate-200 pb-3">
+        <div>
+          <h3 class="font-bold text-lg flex items-center gap-2 text-slate-900">
+            <i class="fa-solid fa-crown text-amber-500"></i> Langganan Paket Sekolah
+          </h3>
+          <p class="text-xs text-slate-500">Akses tanpa batas seluruh fitur audit & simulasi event</p>
+        </div>
+        <button onclick="closeModal('topUpModal')" class="text-slate-400 hover:text-slate-600 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+      </div>
+
+      <!-- PAKET LANGGANAN CARD -->
+      <div class="p-5 rounded-2xl border-2 border-amber-400 bg-amber-50/40 space-y-3 relative overflow-hidden">
+        <span class="absolute top-0 right-0 bg-amber-500 text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-bl">Akses PRO</span>
+        <div class="flex items-center gap-2 text-amber-800">
+          <i class="fa-solid fa-bolt text-xl text-amber-500"></i>
+          <span class="font-extrabold text-sm">Paket Unlimited 30 Hari</span>
+        </div>
+        <div>
+          <div class="flex items-baseline gap-1">
+            <h4 class="text-3xl font-black text-slate-900">Rp 49.000</h4>
+            <span class="text-xs text-slate-500 font-bold">/ 30 hari</span>
+          </div>
+          <p class="text-xs text-emerald-700 font-semibold mt-1">✨ Hitung & simulasi sepuasnya tanpa batas hitungan</p>
+        </div>
+        <ul class="text-xs text-slate-600 space-y-1.5 pt-2 border-t border-amber-200">
+          <li class="flex items-center gap-1.5"><i class="fa-solid fa-check text-emerald-600"></i> Audit Listrik Harian & Cetak Laporan PDF</li>
+          <li class="flex items-center gap-1.5"><i class="fa-solid fa-check text-emerald-600"></i> Simulasi Rekomendasi Genset Event Sekolah</li>
+          <li class="flex items-center gap-1.5"><i class="fa-solid fa-check text-emerald-600"></i> Simpan Data ke Google Sheets Sekolah</li>
+        </ul>
+        <button onclick="processSubscriptionPayment()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-sm py-3 rounded-xl transition shadow-md flex items-center justify-center gap-2">
+          <i class="fa-solid fa-credit-card"></i> Perpanjang Langganan Sekarang
+        </button>
+      </div>
+
+      <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-center">
+        <p class="text-[11px] text-slate-500">
+          <i class="fa-solid fa-qrcode text-emerald-600 mr-1"></i> Pembayaran QRIS / Bank Transfer / E-Wallet diproses otomatis via <strong>Midtrans Snap</strong>.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL PILIH SEKOLAH TERSIMPAN -->
+  <div id="schoolModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 no-print">
+    <div class="bg-white rounded-xl max-w-md w-full p-5 space-y-4 text-slate-800 shadow-2xl border border-slate-200">
+      <div class="flex justify-between items-center border-b border-slate-200 pb-3">
+        <h3 class="font-bold text-base flex items-center gap-2 text-slate-800">
+          <i class="fa-solid fa-database text-blue-600"></i> Pilih Sekolah Tersimpan
+        </h3>
+        <button onclick="closeModal('schoolModal')" class="text-slate-400 hover:text-slate-600 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <div class="space-y-2">
+        <label class="text-xs font-semibold text-slate-600 block">Daftar Sekolah di Database Google Sheets:</label>
+        <select id="savedSchoolsDropdown" class="w-full bg-slate-100 border border-slate-300 rounded-lg p-2 text-sm font-medium focus:outline-none focus:border-blue-500">
+          <option value="">-- Memuat daftar... --</option>
+        </select>
+      </div>
+      <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+        <button onclick="closeModal('schoolModal')" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-lg transition">Batal</button>
+        <button onclick="loadSelectedSchool()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition flex items-center gap-1 shadow-sm">
+          <i class="fa-solid fa-download"></i> Muat Data
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 mt-6">
+
+    <!-- HEADER LAPORAN KHUSUS CETAK PDF (KOP SURAT) -->
+    <div class="print-only border-b-2 border-slate-900 pb-3 mb-6">
+      <div class="flex justify-between items-end">
+        <div>
+          <h1 class="text-xl font-black uppercase text-slate-900 leading-none">LAPORAN ANALISIS KELISTRIKAN SEKOLAH</h1>
+          <p class="text-base font-bold text-blue-800 mt-1" id="printSchoolTitle">SMAN 1 Nusantara</p>
+        </div>
+        <div class="text-right text-xs text-slate-500">
+          <p>Dokumen Resmi Sarpras</p>
+          <p id="printDate"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= TAB 1: AUDIT HARIAN ================= -->
+    <div id="tab1" class="space-y-6">
+      
+      <!-- TOP METRICS CARDS -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Card 1: Tagihan -->
+        <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between print-card">
+          <div>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Estimasi Tagihan / Bulan</p>
+            <h2 id="totalCost" class="text-2xl font-black text-slate-900 mt-1">Rp0</h2>
+            <p id="totalKwh" class="text-xs text-slate-500 mt-0.5">0 kWh / bulan</p>
+          </div>
+          <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-xl no-print">
+            <i class="fa-solid fa-file-invoice-dollar"></i>
+          </div>
+        </div>
+
+        <!-- Card 2: Peak Load Gauge -->
+        <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 print-card">
+          <div class="flex justify-between items-center mb-2">
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Beban Puncak Inventaris</p>
+            <span id="loadPercentage" class="text-xs font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-700">0%</span>
+          </div>
+          <h2 id="totalWatts" class="text-xl font-bold text-slate-800">0 Watt</h2>
+          <div class="w-full bg-slate-200 rounded-full h-2.5 mt-2 overflow-hidden no-print">
+            <div id="loadBar" class="bg-emerald-500 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+          </div>
+          <div class="flex justify-between items-center mt-1 text-[11px]">
+            <p id="capacityCaption" class="text-slate-500">Daya Nyata Maksimum: 26.400 Watt</p>
+            <p id="roomEstimateCaption" class="text-blue-600 font-bold">~0 Ruangan KBM Aktif</p>
+          </div>
+        </div>
+
+        <!-- Card 3: Quick Tip -->
+        <div class="bg-blue-50 border border-blue-200 p-5 rounded-xl flex items-start gap-3 print-card">
+          <i class="fa-solid fa-lightbulb text-blue-600 text-2xl mt-1 no-print"></i>
+          <div>
+            <h4 class="font-bold text-blue-900 text-sm">Saran Efisiensi Sarpras</h4>
+            <p id="savingTip" class="text-xs text-blue-800 mt-1 leading-relaxed">
+              Tambahkan data inventaris sekolah Anda untuk melihat rekomendasi potensi penghematan.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TABLE INVENTORY SECTION -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden print-card">
+        <div class="p-4 bg-slate-50 border-b border-slate-200 flex flex-wrap justify-between items-center gap-3 no-print">
+          <div>
+            <h3 class="font-bold text-slate-800 text-base">Daftar Inventaris Peralatan Sekolah</h3>
+            <p class="text-xs text-slate-500">Kelola peralatan elektronik harian per ruangan.</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <!-- INPUT FILE UNTUK IMPORT EXCEL/CSV -->
+            <input type="file" id="importFileInput" accept=".xlsx, .xls, .csv" onchange="importFromExcel(event)" class="hidden">
+            
+            <button onclick="document.getElementById('importFileInput').click()" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-lg transition flex items-center gap-1.5 shadow-sm">
+              <i class="fa-solid fa-file-import"></i> 📥 Import Excel/CSV
+            </button>
+            <button id="btnSaveSheets" onclick="saveToSheets()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg transition flex items-center gap-1.5 shadow-sm">
+              <i class="fa-solid fa-file-excel"></i> 💾 Simpan ke Sheets
+            </button>
+            <button onclick="window.print()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold rounded-lg transition flex items-center gap-1.5 shadow-sm">
+              <i class="fa-solid fa-print"></i> 🖨️ Cetak Laporan Audit
+            </button>
+            <button onclick="loadDefaultPreset()" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-lg transition flex items-center gap-1.5">
+              <i class="fa-solid fa-rotate-left"></i> Preset Contoh
+            </button>
+            <button onclick="addRow()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition flex items-center gap-1.5 shadow-sm">
+              <i class="fa-solid fa-plus"></i> Tambah Item
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-600">
+            <thead class="bg-slate-100 text-slate-700 uppercase font-semibold text-[11px]">
+              <tr>
+                <th class="p-3">Ruangan / Nama Alat</th>
+                <th class="p-3 w-28">Daya (Watt)</th>
+                <th class="p-3 w-20">Jumlah</th>
+                <th class="p-3 w-28">Jam/Hari</th>
+                <th class="p-3 w-28">Hari/Bulan</th>
+                <th class="p-3 w-32">kWh / Bulan</th>
+                <th class="p-3 w-16 text-center no-print">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="inventoryTableBody" class="divide-y divide-slate-200">
+              <!-- Dynamic Rows inserted by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ================= TAB 2: SIMULASI EVENT ================= -->
+    <div id="tab2" class="hidden space-y-6">
+      
+      <!-- BASE LOAD BANNER WITH WEEKEND & VIP ROOM TOGGLE -->
+      <div class="bg-slate-900 text-white p-5 rounded-xl shadow-md space-y-3 print-card">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <span class="bg-blue-500/20 text-blue-300 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-blue-500/30 no-print">Auto Sync Dari Tab 1</span>
+            <h3 class="font-bold text-lg mt-1">Kapasitas Gedung & Base Load Sekolah</h3>
+            <p class="text-xs text-slate-400 mt-0.5">Sistem mengunci beban rutin sekolah yang tetap harus menyala saat event.</p>
+          </div>
+          <div class="flex items-center gap-6 border-t md:border-t-0 md:border-l border-slate-700 pt-3 md:pt-0 md:pl-6">
+            <div>
+              <p class="text-[10px] text-slate-400">Kapasitas PLN Nyata</p>
+              <p id="simPlnCapacity" class="font-black text-xl text-emerald-400">26.400 W</p>
+            </div>
+            <div>
+              <p class="text-[10px] text-slate-400">Base Load Gedung</p>
+              <p id="simBaseLoad" class="font-black text-xl text-yellow-400">4.000 W</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- OPSI HARI LIBUR & RUANG TRANSIT VIP -->
+        <div class="border-t border-slate-700/80 pt-3 flex flex-wrap items-center justify-between gap-3 text-xs no-print">
+          <div class="flex items-center gap-2">
+            <input type="checkbox" id="chkWeekendEvent" checked onchange="triggerActionWithCredit(calculateEvent)" class="w-4 h-4 text-blue-500 rounded cursor-pointer">
+            <label for="chkWeekendEvent" class="text-yellow-300 font-semibold cursor-pointer">
+              ⚡ Event Hari Libur / Akhir Pekan (KBM & Kelas Reguler Libur)
+            </label>
+          </div>
+          
+          <div id="vipRoomContainer" class="flex flex-wrap items-center gap-2 bg-slate-800 px-3 py-1.5 rounded border border-slate-700">
+            <span class="text-slate-300">Ruang Rias / VIP / Transit Aktif:</span>
+            <input type="number" id="vipRoomCount" value="3" min="0" max="20" onchange="triggerActionWithCredit(calculateEvent)" class="w-12 bg-slate-900 border border-slate-600 rounded text-center text-white font-bold py-0.5 focus:outline-none focus:border-blue-500">
+            <span class="text-slate-400 text-[11px]">Ruangan</span>
+            <span class="text-[10px] text-yellow-300 font-semibold bg-yellow-400/10 px-1.5 py-0.5 rounded border border-yellow-400/20">(+1.300 W / ruangan: AC + Lampu)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- INPUT FORM EVENT GEAR (LEFT 7 COLS) -->
+        <div class="lg:col-span-7 bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-5 print-card">
+          <div class="border-b border-slate-200 pb-3 flex justify-between items-center">
+            <div>
+              <h3 class="font-bold text-slate-800 text-base">Checklist & Beban Peralatan Event / Pensi</h3>
+              <p class="text-xs text-slate-500">Masukkan spesifikasi daya dari vendor panggung & bazaar.</p>
+            </div>
+            <button onclick="addCustomEventItem()" class="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition flex items-center gap-1 shadow-sm no-print">
+              <i class="fa-solid fa-plus"></i> Tambah Alat Event
+            </button>
+          </div>
+
+          <div id="eventItemsContainer" class="space-y-4 text-xs">
+            <!-- Preset Items -->
+            <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <input type="checkbox" id="chkVideotron" checked onchange="triggerActionWithCredit(calculateEvent)" class="w-4 h-4 text-blue-600 rounded no-print">
+                <div>
+                  <p class="font-bold text-slate-800">Videotron / Layar LED Panggung</p>
+                  <p class="text-[11px] text-slate-500">Estimasi ~500 Watt / m²</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <input type="number" id="areaVideotron" value="18" onchange="triggerActionWithCredit(calculateEvent)" class="w-16 bg-white border border-slate-300 rounded px-2 py-1 text-right font-medium">
+                <span class="text-slate-500 font-medium">m²</span>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <input type="checkbox" id="chkSound" checked onchange="triggerActionWithCredit(calculateEvent)" class="w-4 h-4 text-blue-600 rounded no-print">
+                <div>
+                  <p class="font-bold text-slate-800">Sound System Line Array</p>
+                  <p class="text-[11px] text-slate-500">Kapasitas RMS Total Vendor</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <input type="number" id="wattSound" value="10000" onchange="triggerActionWithCredit(calculateEvent)" class="w-20 bg-white border border-slate-300 rounded px-2 py-1 text-right font-medium">
+                <span class="text-slate-500 font-medium">Watt RMS</span>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <input type="checkbox" id="chkLighting" checked onchange="triggerActionWithCredit(calculateEvent)" class="w-4 h-4 text-blue-600 rounded no-print">
+                <div>
+                  <p class="font-bold text-slate-800">Lighting Panggung (PAR LED & Moving)</p>
+                  <p class="text-[11px] text-slate-500">Paket Peralatan Lighting</p>
+                </div>
+              </div>
+              <select id="presetLighting" onchange="triggerActionWithCredit(calculateEvent)" class="bg-white border border-slate-300 rounded px-2 py-1 font-medium">
+                <option value="2000">Minimalis (2.000 W)</option>
+                <option value="5000" selected>Standard Pensi (5.000 W)</option>
+                <option value="10000">Heavy Stage (10.000 W)</option>
+              </select>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <input type="checkbox" id="chkObs" checked onchange="triggerActionWithCredit(calculateEvent)" class="w-4 h-4 text-blue-600 rounded no-print">
+                <div>
+                  <p class="font-bold text-slate-800">Perangkat Streaming & OBS System</p>
+                  <p class="text-[11px] text-slate-500">PC OBS, Mixer Video, Kamera</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <input type="number" id="wattObs" value="1500" onchange="triggerActionWithCredit(calculateEvent)" class="w-20 bg-white border border-slate-300 rounded px-2 py-1 text-right font-medium">
+                <span class="text-slate-500 font-medium">Watt</span>
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <input type="checkbox" id="chkBazaar" checked onchange="triggerActionWithCredit(calculateEvent)" class="w-4 h-4 text-blue-600 rounded no-print">
+                <div>
+                  <p class="font-bold text-slate-800">Stand Bazaar Makanan / Tenants</p>
+                  <p class="text-[11px] text-slate-500">Alat pemanas / blender (~1000W / stand)</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <input type="number" id="countBazaar" value="6" onchange="triggerActionWithCredit(calculateEvent)" class="w-16 bg-white border border-slate-300 rounded px-2 py-1 text-right font-medium">
+                <span class="text-slate-500 font-medium">Stand</span>
+              </div>
+            </div>
+
+            <!-- Dynamic Custom Items Container -->
+            <div id="customEventItemsList" class="space-y-3 border-t border-slate-200 pt-3"></div>
+          </div>
+        </div>
+
+        <!-- RIGHT RESULT & VERDICT CARD (RIGHT 5 COLS) -->
+        <div class="lg:col-span-5 space-y-4">
+          <div id="verdictCard" class="p-6 rounded-xl border-2 transition-all duration-300 bg-red-50 border-red-300 text-red-900 print-card">
+            
+            <div class="flex items-center gap-2 mb-2">
+              <span id="verdictBadge" class="px-2.5 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-red-600 text-white">
+                WAJIB SEWA GENSET
+              </span>
+            </div>
+
+            <h2 id="verdictTitle" class="text-xl font-black">BERISIKO BLACKOUT!</h2>
+            <p id="verdictSubtitle" class="text-xs mt-1 leading-relaxed opacity-90">
+              Total beban puncak acara melebihi batas kemampuan listrik PLN sekolah.
+            </p>
+
+            <!-- BERKAS LAMPIRAN KHUSUS CETAK PDF -->
+            <div class="print-only my-3 p-3 bg-slate-100 rounded border border-slate-300 text-[11px] space-y-1">
+              <p class="font-bold border-b border-slate-300 pb-1 text-slate-900 uppercase">Detail Parameter Skenario Event:</p>
+              <p>• Jenis Hari: <strong id="printEventDayType">Hari Libur / Akhir Pekan</strong></p>
+              <p>• Ruang Transit / VIP Aktif: <strong id="printVipCount">3 Ruangan</strong> (Beban: <span id="printVipWatt">3.900 Watt</span>)</p>
+              <p>• Base Load Gedung Routine: <strong id="printBaseLoadWatt">2.000 Watt</strong></p>
+            </div>
+
+            <hr class="my-4 border-slate-300/60 no-print">
+
+            <!-- Metrics List -->
+            <div class="space-y-2 text-xs">
+              <div class="flex justify-between">
+                <span class="opacity-80">Beban Acara + Base Load:</span>
+                <span id="eventRawWatt" class="font-bold">28.500 Watt</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="opacity-80">Margin Keamanan Inrush (20%):</span>
+                <span id="eventMarginWatt" class="font-bold">+5.700 Watt</span>
+              </div>
+              <div class="flex justify-between text-sm font-black pt-1 border-t border-slate-300/60">
+                <span>TOTAL BEBAN PUNCAK:</span>
+                <span id="eventTotalWatt" class="text-red-700">34.200 Watt</span>
+              </div>
+            </div>
+
+            <div class="mt-5 p-3.5 bg-white/80 rounded-lg border border-slate-200 text-xs text-slate-800 space-y-1.5 shadow-sm">
+              <p class="font-bold text-slate-900 flex items-center gap-1.5">
+                <i class="fa-solid fa-truck-monster text-blue-600"></i> Spesifikasi Rekomendasi Genset:
+              </p>
+              <p>• Kapasitas Minimal: <strong id="recGensetKva" class="text-blue-700 font-bold">60 kVA Silent Type</strong></p>
+              <p>• Estimasi Solar: <strong id="recGensetFuel">100 - 120 Liter</strong> (Durasi 8 Jam)</p>
+            </div>
+
+            <button onclick="window.print()" class="mt-5 w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-lg transition shadow flex items-center justify-center gap-2 no-print">
+              <i class="fa-solid fa-print"></i> Cetak / Export PDF Rekomendasi Event
+            </button>
+          </div>
+
+          <!-- KARTU ESTIMASI BIAYA / RAB OPERASIONAL EVENT -->
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4 print-card">
+            <div class="border-b border-slate-200 pb-2 flex justify-between items-center">
+              <h4 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                <i class="fa-solid fa-coins text-emerald-600"></i> Estimasi Anggaran Operasional Listrik
+              </h4>
+              <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-semibold">RAB Event</span>
+            </div>
+
+            <!-- Input Parameter Acara & Biaya (no-print) -->
+            <div class="grid grid-cols-2 gap-3 text-xs no-print">
+              <div>
+                <label class="block text-slate-500 font-medium mb-1">Durasi Event (Jam)</label>
+                <input type="number" id="eventHours" value="8" min="1" max="48" onchange="triggerActionWithCredit(calculateEvent)" class="w-full bg-slate-50 border border-slate-300 rounded px-2.5 py-1 font-bold text-slate-800 focus:outline-none focus:border-blue-500">
+              </div>
+              <div id="solarCostInputContainer">
+                <label class="block text-slate-500 font-medium mb-1">Harga Solar (/Liter)</label>
+                <input type="number" id="solarPrice" value="15000" onchange="triggerActionWithCredit(calculateEvent)" class="w-full bg-slate-50 border border-slate-300 rounded px-2.5 py-1 font-bold text-slate-800 focus:outline-none focus:border-blue-500">
+              </div>
+            </div>
+
+            <!-- Rincian Biaya -->
+            <div class="space-y-2 text-xs pt-1 border-t border-slate-100">
+              <div class="flex justify-between items-center text-slate-600">
+                <span id="labelPrimaryCost">Estimasi Pemakaian PLN:</span>
+                <span id="valPrimaryCost" class="font-bold text-slate-800">Rp0</span>
+              </div>
+              <div id="rowGensetRent" class="hidden flex justify-between items-center text-slate-600">
+                <span>Estimasi Sewa Genset:</span>
+                <span id="valGensetRentCost" class="font-bold text-slate-800">Rp0</span>
+              </div>
+              <div id="rowFuelCost" class="hidden flex justify-between items-center text-slate-600">
+                <span>Estimasi Bahan Bakar Solar:</span>
+                <span id="valFuelCost" class="font-bold text-slate-800">Rp0</span>
+              </div>
+              
+              <div class="flex justify-between items-center pt-2 border-t border-slate-200 text-sm font-black text-slate-900">
+                <span>TOTAL ESTIMASI BIAYA LISTRIK:</span>
+                <span id="valGrandTotalEventCost" class="text-emerald-700 text-base">Rp0</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="fixed bottom-4 right-4 bg-slate-900 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-2xl opacity-0 transition-opacity duration-300 pointer-events-none flex items-center gap-2 z-50">
+    <i class="fa-solid fa-circle-check text-emerald-400 text-sm"></i> <span id="toastMsg">Notifikasi</span>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC INTEGRATED WITH HOSTINGER API & MIDTRANS -->
+  <script>
+    // ENDPOINT API SERVER HOSTINGER DENGAN PATH DIRECTORY BARU
+    const API_BASE_URL = 'https://edueasy.id/api-kalkulator-listrik';
+
+    // URL Web App Apps Script untuk sync Sheets
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbyUbHeH5sD5KI1-dCGLNjGzLzEunKYEvuaHw003NHBMqGcXSKnl5SN54ent1UpOvBSm/exec";
+
+    // STATE USER SESSION SUBSCRIPTION SERVER
+    let currentUser = {
+      isLoggedIn: false,
+      userId: '',
+      email: '',
+      name: '',
+      isSubscribed: false,
+      subExpiryDate: ''
+    };
+
+    let inventory = [
+      { room: 'Lab Komputer 1', name: 'AC Split 1.5 PK', watt: 1200, qty: 4, hours: 6, days: 20 },
+      { room: 'Lab Komputer 1', name: 'PC Client', watt: 150, qty: 30, hours: 5, days: 20 },
+      { room: 'Ruang Kelas', name: 'Lampu LED Tube', watt: 18, qty: 80, hours: 8, days: 20 },
+      { room: 'Ruang Kelas', name: 'LCD Proyektor', watt: 300, qty: 20, hours: 4, days: 20 },
+      { room: 'Ruang TU & Guru', name: 'Printer Laserjet', watt: 600, qty: 2, hours: 2, days: 20 },
+      { room: 'Fasilitas Umum', name: 'Pompa Air Jet Pump', watt: 750, qty: 2, hours: 3, days: 30 }
+    ];
+
+    let customEventGear = [];
+
+    // Format tampilan tanggal Indonesia (DD Mmm YYYY)
+    function formatDateIndo(dateStr) {
+      if (!dateStr) return '';
+      const parts = dateStr.split('-');
+      if (parts.length !== 3) return dateStr;
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+      return `${parts[2]} ${months[parseInt(parts[1]) - 1]} ${parts[0]}`;
+    }
+
+    // ================= 1. SYSTEM SESSION & SUBSCRIPTION STATUS =================
+    function initServerUserSession() {
+      const savedSession = localStorage.getItem('calc_server_user_sekolah_db');
+      if (savedSession) {
+        try {
+          currentUser = JSON.parse(savedSession);
+          if (currentUser.email) {
+            fetchUserStatusFromServer(currentUser.email);
+          }
+        } catch(e) {
+          console.error("Session parse error:", e);
+        }
+      }
+      renderUserSessionUI();
+    }
+
+    async function fetchUserStatusFromServer(userEmail, passcode = '') {
+      if (!userEmail) return;
+      try {
+        const res = await fetch(`${API_BASE_URL}/check-user.php`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: userEmail, passcode: passcode })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          currentUser.isLoggedIn = true;
+          currentUser.email = userEmail;
+          currentUser.userId = userEmail;
+          currentUser.name = userEmail.split('@')[0];
+          currentUser.isSubscribed = data.isSubscribed;
+          currentUser.subExpiryDate = data.subExpiryDate;
+          saveServerUserSession();
+        }
+      } catch (err) {
+        console.error("Gagal menyinkronkan data langganan dari server:", err);
+      }
+    }
+
+    function renderUserSessionUI() {
+      const loggedOutView = document.getElementById('loggedOutView');
+      const loggedInView = document.getElementById('loggedInView');
+      const userNameText = document.getElementById('userNameText');
+      const userSubText = document.getElementById('userSubText');
+      const expiredBanner = document.getElementById('expiredBanner');
+
+      if (currentUser.isLoggedIn && currentUser.email) {
+        loggedOutView.classList.add('hidden');
+        loggedInView.classList.remove('hidden');
+        userNameText.innerText = currentUser.name || currentUser.email.split('@')[0];
+
+        const formattedDate = currentUser.subExpiryDate ? formatDateIndo(currentUser.subExpiryDate) : '-';
+
+        if (currentUser.isSubscribed) {
+          userSubText.innerText = `Aktif s/d: ${formattedDate}`;
+          if (expiredBanner) expiredBanner.classList.add('hidden');
+        } else {
+          userSubText.innerText = `Masa Aktif Habis (${formattedDate})`;
+          if (expiredBanner) expiredBanner.classList.remove('hidden');
+        }
+      } else {
+        loggedOutView.classList.remove('hidden');
+        loggedInView.classList.add('hidden');
+        if (expiredBanner) expiredBanner.classList.add('hidden');
+      }
+    }
+
+    function saveServerUserSession() {
+      localStorage.setItem('calc_server_user_sekolah_db', JSON.stringify(currentUser));
+      renderUserSessionUI();
+    }
+
+    async function loginWithEmail() {
+      const emailInput = document.getElementById('loginEmailInput').value.trim();
+      const salesCodeInput = document.getElementById('loginSalesCodeInput').value.trim();
+
+      if (!emailInput || !emailInput.includes('@')) {
+        showToast("⚠️ Silakan masukkan alamat email yang valid!");
+        return;
+      }
+      await processUserLogin(emailInput, salesCodeInput);
+    }
+
+    async function processUserLogin(email, passcode = '') {
+      showToast("Menghubungkan ke server...");
+      try {
+        const response = await fetch(`${API_BASE_URL}/check-user.php`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            email: email,
+            passcode: passcode 
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          currentUser = {
+            isLoggedIn: true,
+            userId: email,
+            email: email,
+            name: email.split('@')[0],
+            isSubscribed: data.isSubscribed,
+            subExpiryDate: data.subExpiryDate
+          };
+
+          saveServerUserSession();
+          closeModal('loginModal');
+
+          const formattedExpiry = formatDateIndo(data.subExpiryDate);
+
+          if (data.isNew) {
+            showToast(`🎉 Akun terdaftar! Akses Uji Coba Gratis aktif hingga ${formattedExpiry}`);
+          } else if (data.isOwner) {
+            showToast(`👑 Mode Testing Owner Aktif! Akses aktif hingga ${formattedExpiry}`);
+          } else {
+            showToast(`👋 Login berhasil! Akses aktif hingga ${formattedExpiry}`);
+          }
+          calculateAll();
+        } else {
+          showToast(data.message || "❌ Gagal melakukan login ke server.");
+        }
+      } catch (err) {
+        console.error("Login Error:", err);
+        showToast("❌ Gagal terhubung ke database server.");
+      }
+    }
+
+    function logoutUser() {
+      currentUser = {
+        isLoggedIn: false,
+        userId: '',
+        email: '',
+        name: '',
+        isSubscribed: false,
+        subExpiryDate: ''
+      };
+      localStorage.removeItem('calc_server_user_sekolah_db');
+      renderUserSessionUI();
+      showToast("Anda telah keluar.");
+    }
+
+    // ================= 2. VERIFIKASI LANGGANAN AKTIF =================
+    function triggerActionWithCredit(callbackAction) {
+      if (!currentUser.isLoggedIn || !currentUser.email) {
+        openLoginModal();
+        return;
+      }
+
+      if (!currentUser.isSubscribed) {
+        showToast("⚠️ Masa langganan telah habis. Silakan perpanjang langganan.");
+        openTopUpModal();
+        return;
+      }
+
+      if (typeof callbackAction === 'function') {
+        callbackAction();
+      }
+    }
+
+    // ================= 3. MIDTRANS SNAP PAYMENT PROCESSOR =================
+    async function processSubscriptionPayment() {
+      if (!currentUser.isLoggedIn || !currentUser.email) {
+        showToast("Silakan login dengan email terlebih dahulu!");
+        openLoginModal();
+        return;
+      }
+
+      showToast("Menyiapkan gerbang pembayaran Midtrans Rp 49.000...");
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/create-snap-token.php`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: 49000,
+            email: currentUser.email,
+            custName: currentUser.name || currentUser.email
+          })
+        });
+
+        const result = await response.json();
+        const snapToken = result.token || result.snapToken;
+
+        if (!snapToken) {
+          throw new Error(result.message || "Gagal mendapatkan Snap Token dari server.");
+        }
+
+        if (window.snap && typeof window.snap.pay === 'function') {
+          window.snap.pay(snapToken, {
+            onSuccess: function(res) {
+              showToast("✅ Pembayaran Berhasil! Memperbarui status langganan...");
+              fetchUserStatusFromServer(currentUser.email);
+              closeModal('topUpModal');
+            },
+            onPending: function(res) {
+              showToast("⏳ Menunggu penyelesaian pembayaran...");
+            },
+            onError: function(res) {
+              showToast("❌ Pembayaran gagal diproses!");
+            },
+            onClose: function() {
+              showToast("Popup pembayaran Midtrans ditutup.");
+            }
+          });
+        } else {
+          showToast("❌ Midtrans Snap SDK belum dimuat di halaman.");
+        }
+      } catch (err) {
+        console.error("Midtrans Error:", err);
+        showToast("Gagal terhubung ke gateway pembayaran.");
+      }
+    }
+
+    // ================= 4. NAVIGATION & CORE LOGIC =================
+    function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+    function openLoginModal() { openModal('loginModal'); }
+    function openTopUpModal() { 
+      if (!currentUser.isLoggedIn) {
+        openLoginModal();
+        return;
+      }
+      openModal('topUpModal'); 
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastMsg').innerText = msg;
+      toast.classList.remove('opacity-0', 'pointer-events-none');
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'pointer-events-none');
+      }, 3500);
+    }
+
+    function switchTab(tabIndex) {
+      const tab1 = document.getElementById('tab1');
+      const tab2 = document.getElementById('tab2');
+      const btn1 = document.getElementById('btnTab1');
+      const btn2 = document.getElementById('btnTab2');
+
+      if (tabIndex === 1) {
+        tab1.classList.remove('hidden');
+        tab2.classList.add('hidden');
+        btn1.className = "px-5 py-2.5 text-sm font-semibold border-b-2 border-blue-500 text-blue-400 flex items-center gap-2";
+        btn2.className = "px-5 py-2.5 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2";
+      } else {
+        tab1.classList.add('hidden');
+        tab2.classList.remove('hidden');
+        btn2.className = "px-5 py-2.5 text-sm font-semibold border-b-2 border-blue-500 text-blue-400 flex items-center gap-2";
+        btn1.className = "px-5 py-2.5 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2";
+        calculateEvent();
+      }
+    }
+
+    function renderInventory() {
+      const tbody = document.getElementById('inventoryTableBody');
+      tbody.innerHTML = '';
+
+      inventory.forEach((item, index) => {
+        const kwh = ((item.watt * item.qty * item.hours * item.days) / 1000).toFixed(1);
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+        tr.innerHTML = `
+          <td class="p-3">
+            <input type="text" value="${item.name}" onchange="updateItem(${index}, 'name', this.value)" class="w-full bg-transparent border-b border-transparent focus:border-blue-500 font-semibold text-slate-800">
+            <span class="text-[10px] text-slate-400 block">${item.room}</span>
+          </td>
+          <td class="p-3">
+            <input type="number" value="${item.watt}" onchange="updateItem(${index}, 'watt', this.value)" class="w-20 bg-slate-50 border border-slate-200 rounded px-1.5 py-1">
+          </td>
+          <td class="p-3">
+            <input type="number" value="${item.qty}" onchange="updateItem(${index}, 'qty', this.value)" class="w-14 bg-slate-50 border border-slate-200 rounded px-1.5 py-1">
+          </td>
+          <td class="p-3">
+            <input type="number" value="${item.hours}" onchange="updateItem(${index}, 'hours', this.value)" class="w-16 bg-slate-50 border border-slate-200 rounded px-1.5 py-1">
+          </td>
+          <td class="p-3">
+            <input type="number" value="${item.days}" onchange="updateItem(${index}, 'days', this.value)" class="w-16 bg-slate-50 border border-slate-200 rounded px-1.5 py-1">
+          </td>
+          <td class="p-3 font-bold text-slate-700">${kwh} kWh</td>
+          <td class="p-3 text-center no-print">
+            <button onclick="deleteRow(${index})" class="text-rose-500 hover:text-rose-700 p-1"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      calculateAll();
+    }
+
+    function addRow() {
+      inventory.push({ room: 'Ruangan Baru', name: 'Perangkat Baru', watt: 100, qty: 1, hours: 5, days: 20 });
+      renderInventory();
+    }
+
+    function deleteRow(index) {
+      inventory.splice(index, 1);
+      renderInventory();
+    }
+
+    function updateItem(index, field, value) {
+      inventory[index][field] = field === 'name' || field === 'room' ? value : parseFloat(value) || 0;
+      renderInventory();
+    }
+
+    function loadDefaultPreset() {
+      inventory = [
+        { room: 'Lab Komputer 1', name: 'AC Split 1.5 PK', watt: 1200, qty: 4, hours: 6, days: 20 },
+        { room: 'Lab Komputer 1', name: 'PC Client', watt: 150, qty: 30, hours: 5, days: 20 },
+        { room: 'Ruang Kelas', name: 'Lampu LED Tube', watt: 18, qty: 80, hours: 8, days: 20 },
+        { room: 'Ruang Kelas', name: 'LCD Proyektor', watt: 300, qty: 20, hours: 4, days: 20 },
+        { room: 'Ruang TU & Guru', name: 'Printer Laserjet', watt: 600, qty: 2, hours: 2, days: 20 },
+        { room: 'Fasilitas Umum', name: 'Pompa Air Jet Pump', watt: 750, qty: 2, hours: 3, days: 30 }
+      ];
+      renderInventory();
+    }
+
+    // ================= FUNGSI IMPORT FILE EXCEL / CSV =================
+    function importFromExcel(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          
+          const firstSheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheetName];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+          if (jsonData.length <= 1) {
+            showToast("⚠️ File Excel/CSV kosong atau tidak memiliki data.");
+            return;
+          }
+
+          const newInventory = [];
+
+          for (let i = 1; i < jsonData.length; i++) {
+            const row = jsonData[i];
+            if (!row || row.length === 0) continue;
+
+            const room = row[0] ? String(row[0]).trim() : 'Umum';
+            const name = row[1] ? String(row[1]).trim() : 'Perangkat';
+            const watt = parseFloat(row[2]) || 0;
+            const qty = parseInt(row[3]) || 1;
+            const hours = parseFloat(row[4]) || 5;
+            const days = parseInt(row[5]) || 20;
+
+            if (name && watt >= 0) {
+              newInventory.push({ room, name, watt, qty, hours, days });
+            }
+          }
+
+          if (newInventory.length > 0) {
+            inventory = newInventory;
+            renderInventory();
+            showToast(`✅ Berhasil mengimpor ${newInventory.length} item inventaris!`);
+          } else {
+            showToast("❌ Format file tidak sesuai.");
+          }
+
+        } catch (err) {
+          console.error("Error import file:", err);
+          showToast("❌ Gagal membaca file Excel/CSV.");
+        }
+
+        event.target.value = '';
+      };
+
+      reader.readAsArrayBuffer(file);
+    }
+
+    function addCustomEventItem() {
+      customEventGear.push({ name: 'Misty Fan / Blower', watt: 500, active: true });
+      renderCustomEventItems();
+      calculateEvent();
+    }
+
+    function deleteCustomEventItem(index) {
+      customEventGear.splice(index, 1);
+      renderCustomEventItems();
+      calculateEvent();
+    }
+
+    function renderCustomEventItems() {
+      const container = document.getElementById('customEventItemsList');
+      container.innerHTML = '';
+
+      customEventGear.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = "p-3 bg-blue-50/50 rounded-lg border border-blue-200 flex items-center justify-between gap-3";
+        div.innerHTML = `
+          <div class="flex items-center gap-3 flex-1">
+            <input type="checkbox" ${item.active ? 'checked' : ''} onchange="customEventGear[${index}].active = this.checked; triggerActionWithCredit(calculateEvent);" class="w-4 h-4 text-blue-600 rounded no-print">
+            <input type="text" value="${item.name}" onchange="customEventGear[${index}].name = this.value; triggerActionWithCredit(calculateEvent);" class="w-full bg-transparent border-b border-blue-300 font-bold text-slate-800 text-xs focus:outline-none">
+          </div>
+          <div class="flex items-center gap-2">
+            <input type="number" value="${item.watt}" onchange="customEventGear[${index}].watt = parseFloat(this.value)||0; triggerActionWithCredit(calculateEvent);" class="w-20 bg-white border border-slate-300 rounded px-2 py-1 text-right font-medium text-xs">
+            <span class="text-slate-500 font-medium text-xs">Watt</span>
+            <button onclick="deleteCustomEventItem(${index})" class="text-rose-500 hover:text-rose-700 ml-1 no-print"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function calculateAll() {
+      const schoolName = document.getElementById('schoolName').value || 'Nama Sekolah / Instansi';
+      document.getElementById('printSchoolTitle').innerText = schoolName;
+
+      const vaCapacity = parseFloat(document.getElementById('plnCapacity').value);
+      const realCapacityWatt = vaCapacity * 0.8;
+      const tariff = parseFloat(document.getElementById('tariffRate').value) || 1500;
+
+      let totalMonthlyKwh = 0;
+      let totalInstantWatt = 0;
+
+      inventory.forEach(item => {
+        const itemKwh = (item.watt * item.qty * item.hours * item.days) / 1000;
+        totalMonthlyKwh += itemKwh;
+        totalInstantWatt += (item.watt * item.qty);
+      });
+
+      const totalCostVal = totalMonthlyKwh * tariff;
+
+      document.getElementById('totalCost').innerText = 'Rp ' + Math.round(totalCostVal).toLocaleString('id-ID');
+      document.getElementById('totalKwh').innerText = totalMonthlyKwh.toFixed(1) + ' kWh / bulan';
+      document.getElementById('totalWatts').innerText = totalInstantWatt.toLocaleString('id-ID') + ' Watt';
+      document.getElementById('capacityCaption').innerText = `Daya Nyata Maksimum PLN: ${realCapacityWatt.toLocaleString('id-ID')} Watt`;
+
+      const estRooms = Math.round(totalInstantWatt / 1300) || 0;
+      document.getElementById('roomEstimateCaption').innerText = `~${estRooms} Ruangan KBM Aktif`;
+
+      const loadRatio = Math.min(Math.round((totalInstantWatt / realCapacityWatt) * 100), 100);
+      const loadBar = document.getElementById('loadBar');
+      const loadBadge = document.getElementById('loadPercentage');
+
+      loadBar.style.width = loadRatio + '%';
+      loadBadge.innerText = loadRatio + '%';
+
+      if (loadRatio > 90) {
+        loadBar.className = "bg-rose-500 h-2.5 rounded-full transition-all duration-300";
+        loadBadge.className = "text-xs font-bold px-2 py-0.5 rounded bg-rose-100 text-rose-700";
+      } else if (loadRatio > 70) {
+        loadBar.className = "bg-amber-500 h-2.5 rounded-full transition-all duration-300";
+        loadBadge.className = "text-xs font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-700";
+      } else {
+        loadBar.className = "bg-emerald-500 h-2.5 rounded-full transition-all duration-300";
+        loadBadge.className = "text-xs font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-700";
+      }
+
+      const acCount = inventory.filter(i => i.name.toLowerCase().includes('ac')).reduce((sum, i) => sum + i.qty, 0);
+      if (acCount > 0) {
+        const estSavings = Math.round(acCount * 1000 * 1 * 20 / 1000 * tariff);
+        document.getElementById('savingTip').innerText = `Sekolah memiliki sekitar ${acCount} unit AC. Mematikan AC 1 jam lebih awal saat jam istirahat berpotensi menghemat hingga Rp ${estSavings.toLocaleString('id-ID')} / bulan.`;
+      } else {
+        document.getElementById('savingTip').innerText = "Ganti lampu neon konvensional ke LED Tube untuk memangkas konsumsi listrik hingga 50%.";
+      }
+
+      document.getElementById('simPlnCapacity').innerText = realCapacityWatt.toLocaleString('id-ID') + ' W';
+      calculateEvent();
+    }
+
+    function calculateEvent() {
+      const vaCapacity = parseFloat(document.getElementById('plnCapacity').value);
+      const realCapacityWatt = vaCapacity * 0.8;
+      const tariff = parseFloat(document.getElementById('tariffRate').value) || 1500;
+      
+      const isWeekend = document.getElementById('chkWeekendEvent').checked;
+      const vipContainer = document.getElementById('vipRoomContainer');
+      
+      let baseLoad = 0;
+      let activeVipRooms = 0;
+
+      if (isWeekend) {
+        vipContainer.classList.remove('hidden');
+        activeVipRooms = parseInt(document.getElementById('vipRoomCount').value) || 0;
+        baseLoad = 2000 + (activeVipRooms * 1300);
+      } else {
+        vipContainer.classList.add('hidden');
+        let totalInstantWatt = 0;
+        inventory.forEach(item => { totalInstantWatt += (item.watt * item.qty); });
+        baseLoad = Math.round(totalInstantWatt * 0.2) || 3000;
+      }
+
+      document.getElementById('simBaseLoad').innerText = baseLoad.toLocaleString('id-ID') + ' W';
+
+      document.getElementById('printEventDayType').innerText = isWeekend ? 'Hari Libur / Akhir Pekan (KBM Kelas Reguler OFF)' : 'Hari Kerja / Efektif Sekolah';
+      document.getElementById('printVipCount').innerText = isWeekend ? `${activeVipRooms} Ruangan` : 'N/A (Hari Kerja)';
+      document.getElementById('printVipWatt').innerText = isWeekend ? `${(activeVipRooms * 1300).toLocaleString('id-ID')} Watt` : '0 Watt';
+      document.getElementById('printBaseLoadWatt').innerText = baseLoad.toLocaleString('id-ID') + ' Watt';
+
+      let eventLoad = 0;
+
+      if (document.getElementById('chkVideotron').checked) {
+        const area = parseFloat(document.getElementById('areaVideotron').value) || 0;
+        eventLoad += (area * 500);
+      }
+
+      if (document.getElementById('chkSound').checked) {
+        const soundWatt = parseFloat(document.getElementById('wattSound').value) || 0;
+        eventLoad += (soundWatt * 0.8);
+      }
+
+      if (document.getElementById('chkLighting').checked) {
+        eventLoad += parseFloat(document.getElementById('presetLighting').value);
+      }
+
+      if (document.getElementById('chkObs').checked) {
+        eventLoad += parseFloat(document.getElementById('wattObs').value) || 0;
+      }
+
+      if (document.getElementById('chkBazaar').checked) {
+        const stands = parseFloat(document.getElementById('countBazaar').value) || 0;
+        eventLoad += (stands * 1000);
+      }
+
+      customEventGear.forEach(item => {
+        if (item.active) {
+          eventLoad += (item.watt || 0);
+        }
+      });
+
+      const rawTotal = baseLoad + eventLoad;
+      const marginWatt = rawTotal * 0.2;
+      const grandTotalWatt = rawTotal + marginWatt;
+
+      document.getElementById('eventRawWatt').innerText = rawTotal.toLocaleString('id-ID') + ' Watt';
+      document.getElementById('eventMarginWatt').innerText = '+' + Math.round(marginWatt).toLocaleString('id-ID') + ' Watt';
+      document.getElementById('eventTotalWatt').innerText = Math.round(grandTotalWatt).toLocaleString('id-ID') + ' Watt';
+
+      const eventHours = parseFloat(document.getElementById('eventHours').value) || 8;
+      const solarPrice = parseFloat(document.getElementById('solarPrice').value) || 15000;
+
+      const rowGensetRent = document.getElementById('rowGensetRent');
+      const rowFuelCost = document.getElementById('rowFuelCost');
+      const labelPrimaryCost = document.getElementById('labelPrimaryCost');
+      const valPrimaryCost = document.getElementById('valPrimaryCost');
+      const valGensetRentCost = document.getElementById('valGensetRentCost');
+      const valFuelCost = document.getElementById('valFuelCost');
+      const valGrandTotalEventCost = document.getElementById('valGrandTotalEventCost');
+
+      const vCard = document.getElementById('verdictCard');
+      const vBadge = document.getElementById('verdictBadge');
+      const vTitle = document.getElementById('verdictTitle');
+      const vSub = document.getElementById('verdictSubtitle');
+      const recKva = document.getElementById('recGensetKva');
+      const recFuel = document.getElementById('recGensetFuel');
+
+      if (grandTotalWatt <= realCapacityWatt * 0.85) {
+        vCard.className = "p-6 rounded-xl border-2 transition-all duration-300 bg-emerald-50 border-emerald-300 text-emerald-900 print-card";
+        vBadge.className = "px-2.5 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-emerald-600 text-white";
+        vBadge.innerText = "AMAN! GUNAKAN LISTRIK PLN";
+        vTitle.innerText = "TIDAK PERLU SEWA GENSET";
+        vSub.innerText = "Kapasitas daya PLN sekolah mencukupi untuk mendukung seluruh peralatan event dan ruang transit.";
+        recKva.innerText = "Tidak Dibutuhkan";
+        recFuel.innerText = "0 Liter (Hemat Anggaran)";
+
+        rowGensetRent.classList.add('hidden');
+        rowFuelCost.classList.add('hidden');
+        labelPrimaryCost.innerText = `Tagihan PLN (${eventHours} Jam Event):`;
+
+        const plnKwhUsed = (grandTotalWatt * eventHours) / 1000;
+        const plnTotalCost = plnKwhUsed * tariff;
+
+        valPrimaryCost.innerText = 'Rp ' + Math.round(plnTotalCost).toLocaleString('id-ID');
+        valGrandTotalEventCost.innerText = 'Rp ' + Math.round(plnTotalCost).toLocaleString('id-ID');
+
+      } else if (grandTotalWatt <= realCapacityWatt) {
+        vCard.className = "p-6 rounded-xl border-2 transition-all duration-300 bg-amber-50 border-amber-300 text-amber-900 print-card";
+        vBadge.className = "px-2.5 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-amber-600 text-white";
+        vBadge.innerText = "HYBRID / PISAH JALUR";
+        vTitle.innerText = "BEBAN MENDEKATI BATAS!";
+        vSub.innerText = "Disarankan memisahkan jalur Sound System ke Genset kecil agar panggung tidak terganggu.";
+        
+        const estLiters = Math.round(25 * (eventHours / 8));
+        recKva.innerText = "20 - 30 kVA (Khusus Panggung)";
+        recFuel.innerText = `~${estLiters} Liter Solar (${eventHours} Jam)`;
+
+        rowGensetRent.classList.remove('hidden');
+        rowFuelCost.classList.remove('hidden');
+
+        const plnKwhUsed = (baseLoad * eventHours) / 1000;
+        const plnCost = plnKwhUsed * tariff;
+        const gensetRentCost = 2000000;
+        const fuelCost = estLiters * solarPrice;
+        const totalCost = plnCost + gensetRentCost + fuelCost;
+
+        labelPrimaryCost.innerText = `Tagihan PLN Base Load (${eventHours} Jam):`;
+        valPrimaryCost.innerText = 'Rp ' + Math.round(plnCost).toLocaleString('id-ID');
+        valGensetRentCost.innerText = 'Rp ' + gensetRentCost.toLocaleString('id-ID');
+        valFuelCost.innerText = 'Rp ' + Math.round(fuelCost).toLocaleString('id-ID');
+        valGrandTotalEventCost.innerText = 'Rp ' + Math.round(totalCost).toLocaleString('id-ID');
+
+      } else {
+        vCard.className = "p-6 rounded-xl border-2 transition-all duration-300 bg-rose-50 border-rose-300 text-rose-900 print-card";
+        vBadge.className = "px-2.5 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-rose-600 text-white";
+        vBadge.innerText = "WAJIB SEWA GENSET";
+        vTitle.innerText = "BERISIKO BLACKOUT!";
+        vSub.innerText = `Total beban puncak (${Math.round(grandTotalWatt).toLocaleString('id-ID')} W) melebihi kapasitas PLN (${realCapacityWatt.toLocaleString('id-ID')} W).`;
+        
+        const neededKva = Math.ceil((grandTotalWatt / 1000) / 0.8 / 0.7);
+        let suggestedKva = 60;
+        let estRentRate = 3500000;
+
+        if (neededKva <= 30) { suggestedKva = 30; estRentRate = 2500000; }
+        else if (neededKva <= 45) { suggestedKva = 45; estRentRate = 3000000; }
+        else if (neededKva <= 60) { suggestedKva = 60; estRentRate = 3500000; }
+        else if (neededKva <= 100) { suggestedKva = 100; estRentRate = 5000000; }
+        else { suggestedKva = 150; estRentRate = 7500000; }
+
+        const estLiters = Math.round((suggestedKva * 2) * (eventHours / 8));
+        recKva.innerText = `${suggestedKva} kVA Silent Type`;
+        recFuel.innerText = `${estLiters} Liter Solar (${eventHours} Jam)`;
+
+        rowGensetRent.classList.remove('hidden');
+        rowFuelCost.classList.remove('hidden');
+
+        const baseLoadKwh = (baseLoad * eventHours) / 1000;
+        const baseLoadPlnCost = baseLoadKwh * tariff;
+        const fuelTotalCost = estLiters * solarPrice;
+        const grandTotalBudget = baseLoadPlnCost + estRentRate + fuelTotalCost;
+
+        labelPrimaryCost.innerText = `Tagihan PLN Base Load Gedung (${eventHours} Jam):`;
+        valPrimaryCost.innerText = 'Rp ' + Math.round(baseLoadPlnCost).toLocaleString('id-ID');
+        valGensetRentCost.innerText = 'Rp ' + estRentRate.toLocaleString('id-ID');
+        valFuelCost.innerText = 'Rp ' + Math.round(fuelTotalCost).toLocaleString('id-ID');
+        valGrandTotalEventCost.innerText = 'Rp ' + Math.round(grandTotalBudget).toLocaleString('id-ID');
+      }
+    }
+
+    // ================= 5. GOOGLE SHEETS INTEGRATION PER AKUN =================
+    function fetchSavedSchools() {
+      if (!currentUser.isLoggedIn || !currentUser.email) {
+        showToast("Silakan login dengan email terlebih dahulu!");
+        openLoginModal();
+        return;
+      }
+
+      const modal = document.getElementById('schoolModal');
+      const dropdown = document.getElementById('savedSchoolsDropdown');
+      openModal('schoolModal');
+      dropdown.innerHTML = '<option value="">-- Memuat daftar... --</option>';
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(populateSchoolDropdown)
+          .withFailureHandler(function(err) {
+            showToast("❌ Gagal memuat daftar sekolah: " + err);
+          })
+          .getSchoolList(currentUser.email);
+      } else {
+        fetch(GAS_URL + "?action=getSchools&email=" + encodeURIComponent(currentUser.email))
+          .then(res => res.json())
+          .then(data => populateSchoolDropdown(data))
+          .catch(err => {
+            showToast("❌ Gagal terhubung ke server database: " + err);
+          });
+      }
+    }
+
+    function populateSchoolDropdown(schools) {
+      const dropdown = document.getElementById('savedSchoolsDropdown');
+      dropdown.innerHTML = '';
+
+      if (!schools || schools.length === 0) {
+        dropdown.innerHTML = '<option value="">(Tidak ada data sekolah tersimpan)</option>';
+        return;
+      }
+
+      schools.forEach(school => {
+        const opt = document.createElement('option');
+        opt.value = school;
+        opt.innerText = school;
+        dropdown.appendChild(opt);
+      });
+    }
+
+    function loadSelectedSchool() {
+      const schoolName = document.getElementById('savedSchoolsDropdown').value;
+      if (!schoolName) {
+        showToast("Silakan pilih sekolah terlebih dahulu.");
+        return;
+      }
+
+      triggerActionWithCredit(() => {
+        if (typeof google !== 'undefined' && google.script && google.script.run) {
+          google.script.run
+            .withSuccessHandler(applyLoadedSchoolData)
+            .withFailureHandler(function(err) {
+              showToast("❌ Gagal mengambil data sekolah: " + err);
+            })
+            .loadSchoolData(schoolName, currentUser.email);
+        } else {
+          fetch(GAS_URL + "?action=loadSchool&name=" + encodeURIComponent(schoolName) + "&email=" + encodeURIComponent(currentUser.email))
+            .then(res => res.json())
+            .then(data => applyLoadedSchoolData(data))
+            .catch(err => showToast("❌ Gagal mengambil data sekolah: " + err));
+        }
+      });
+    }
+
+    function applyLoadedSchoolData(data) {
+      if (!data || !data.inventory) {
+        showToast("❌ Data sekolah tidak ditemukan atau kosong.");
+        return;
+      }
+
+      document.getElementById('schoolName').value = data.schoolName;
+      if (data.plnCapacity) {
+        document.getElementById('plnCapacity').value = data.plnCapacity;
+      }
+      inventory = data.inventory;
+
+      renderInventory();
+      closeModal('schoolModal');
+      showToast("✅ Data inventaris " + data.schoolName + " berhasil dimuat!");
+    }
+
+    function saveToSheets() {
+      if (!currentUser.isLoggedIn || !currentUser.email) {
+        showToast("Silakan login terlebih dahulu!");
+        openLoginModal();
+        return;
+      }
+
+      const schoolName = document.getElementById('schoolName').value || 'Nama Sekolah / Instansi';
+      const plnCapacity = document.getElementById('plnCapacity').value;
+      const btnSave = document.getElementById('btnSaveSheets');
+
+      btnSave.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
+      btnSave.disabled = true;
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(res) {
+            showToast("✅ " + res.message);
+            btnSave.innerHTML = '<i class="fa-solid fa-file-excel"></i> 💾 Simpan ke Sheets';
+            btnSave.disabled = false;
+          })
+          .withFailureHandler(function(err) {
+            showToast("❌ Gagal menyimpan: " + err);
+            btnSave.innerHTML = '<i class="fa-solid fa-file-excel"></i> 💾 Simpan ke Sheets';
+            btnSave.disabled = false;
+          })
+          .saveDataToSheet(schoolName, plnCapacity, inventory, currentUser.email);
+      } else {
+        const payload = {
+          schoolName: schoolName,
+          plnCapacity: plnCapacity,
+          inventory: inventory,
+          email: currentUser.email
+        };
+
+        fetch(GAS_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        })
+        .then(() => {
+          showToast("✅ Data inventaris " + schoolName + " berhasil diperbarui di Google Sheets!");
+          btnSave.innerHTML = '<i class="fa-solid fa-file-excel"></i> 💾 Simpan ke Sheets';
+          btnSave.disabled = false;
+        })
+        .catch(err => {
+          showToast("❌ Gagal terhubung ke Google Sheets: " + err);
+          btnSave.innerHTML = '<i class="fa-solid fa-file-excel"></i> 💾 Simpan ke Sheets';
+          btnSave.disabled = false;
+        });
+      }
+    }
+
+    window.onload = function() {
+      const today = new Date();
+      document.getElementById('printDate').innerText = today.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+      
+      initServerUserSession();
+      renderInventory();
+    };
+  </script>
+</body>
+</html>
