@@ -1158,12 +1158,13 @@
           }
 
           const lowerName = item.name.toLowerCase();
-          if (lowerName.includes('ac')) {
-            acQty += item.qty;
-            acWattSum += (item.watt * item.qty);
-          } else if (lowerName.includes('lampu') || lowerName.includes('neon') || lowerName.includes('led')) {
-            lampQty += item.qty;
-          }
+          // Memastikan kata "AC" dicocokkan secara utuh (mencegah terbacanya kata "Active", "Action", dll)
+if (/\bac\b/i.test(item.name) || lowerName.includes('pendingin') || lowerName.includes('air conditioner')) {
+  acQty += item.qty;
+  acWattSum += (item.watt * item.qty);
+} else if (/\b(lampu|neon|led|bohlam)\b/i.test(item.name)) {
+  lampQty += item.qty;
+}
         });
 
         if (maxItem) {
