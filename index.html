@@ -25,6 +25,9 @@
       main { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
       .print-card { border: 1px solid #cbd5e1 !important; box-shadow: none !important; page-break-inside: avoid; }
       input, select { border: none !important; background: transparent !important; appearance: none !important; font-weight: bold !important; }
+      /* Memastikan layout grid 2 kolom menyusun rapi di lembar cetak PDF */
+      .grid { display: block !important; }
+      .lg\:col-span-7, .lg\:col-span-5 { width: 100% !important; margin-bottom: 1.5rem !important; }
     }
     .print-only { display: none; }
   </style>
@@ -521,8 +524,7 @@
               </div>
             </div>
 
-            <!-- Rekomendasi Genset -->
-            <div class="mt-4 p-3.5 bg-white/80 rounded-lg border border-slate-200 text-xs text-slate-800 space-y-1.5 shadow-sm">
+            <div class="mt-5 p-3.5 bg-white/80 rounded-lg border border-slate-200 text-xs text-slate-800 space-y-1.5 shadow-sm">
               <p class="font-bold text-slate-900 flex items-center gap-1.5">
                 <i class="fa-solid fa-truck-monster text-blue-600"></i> Spesifikasi Rekomendasi Genset:
               </p>
@@ -535,12 +537,12 @@
               <p class="font-bold flex items-center gap-1.5 text-amber-900">
                 <i class="fa-solid fa-shield-halved text-amber-600"></i> Catatan Manajemen Risiko Event:
               </p>
-              <p id="riskManagementText" class="text-[11px] leading-relaxed text-slate-700 mt-1">
+              <div id="riskManagementText" class="text-[11px] leading-relaxed text-slate-700 mt-1">
                 --
-              </p>
+              </div>
             </div>
 
-            <button onclick="triggerActionWithCredit(() => window.print())" class="mt-4 w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-lg transition shadow flex items-center justify-center gap-2 no-print">
+            <button onclick="triggerActionWithCredit(() => window.print())" class="mt-5 w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-lg transition shadow flex items-center justify-center gap-2 no-print">
               <i class="fa-solid fa-print"></i> Cetak / Export PDF Rekomendasi Event
             </button>
           </div>
@@ -1221,9 +1223,6 @@
         recKva.innerText = "Tidak Dibutuhkan";
         recFuel.innerText = "0 Liter (Hemat Anggaran)";
 
-        // Catatan Risiko Kondisi Aman
-        riskText.innerHTML = "Gunakan 100% listrik PLN untuk efisiensi anggaran maksimal pada acara internal. Namun, jika acara bersifat <strong>High Profile / Pensi Akbar / Live Broadcast</strong>, pertimbangkan tetap menyewa 1 Genset Standby (20-30 kVA) sebagai <em>redundancy</em> cadangan jika ada pemadaman PLN wilayah tiba-tiba.";
-
         rowGensetRent.classList.add('hidden');
         rowFuelCost.classList.add('hidden');
         labelPrimaryCost.innerText = `Tagihan PLN (${eventHours} Jam Event):`;
@@ -1231,18 +1230,29 @@
         const plnKwhUsed = (grandTotalWatt * eventHours) / 1000;
         const plnTotalCost = plnKwhUsed * tariff;
 
-        // Hitung Potensi Anggaran jika Sewa Genset Standard (30-45 kVA)
+        // Estimasi Biaya jika menyewa genset standard (30-45 kVA)
         const estUnnecessaryGensetRent = 3000000;
         const estUnnecessaryFuel = 60 * solarPrice;
         const totalIfRented = estUnnecessaryGensetRent + estUnnecessaryFuel;
         const netSavings = totalIfRented - plnTotalCost;
+        const loadPercent = Math.round((grandTotalWatt / realCapacityWatt) * 100);
+
+        // Narasi Ringkas Manajemen Risiko Khusus Pimpinan
+        if (riskText) {
+          riskText.innerHTML = `
+            <div class="space-y-1 text-[11px] leading-relaxed">
+              <p><strong>1. Analisis Daya & RAB:</strong> Beban puncak acara hanya <strong>${loadPercent}%</strong> dari kapasitas PLN (${Math.round(grandTotalWatt).toLocaleString('id-ID')} W dari ${realCapacityWatt.toLocaleString('id-ID')} W). Listrik PLN 100% aman & menghemat anggaran sekolah sebesar <strong>Rp ${Math.max(0, Math.round(netSavings)).toLocaleString('id-ID')}</strong> (dibanding sewa genset).</p>
+              <p><strong>2. Mitigasi Risiko:</strong> Khusus acara <em>High Profile / Pensi Akbar / Undangan VVIP</em>, disarankan tetap menyewa 1 Genset Standby (20-30 kVA) khusus panggung sebagai <em>redundancy</em> cadangan jika ada pemadaman PLN wilayah mendadak.</p>
+            </div>
+          `;
+        }
 
         valPrimaryCost.innerText = 'Rp ' + Math.round(plnTotalCost).toLocaleString('id-ID');
         valGrandTotalEventCost.innerText = 'Rp ' + Math.round(plnTotalCost).toLocaleString('id-ID');
 
         // Tampilkan Efisiensi Anggaran
-        rowSavingsContainer.classList.remove('hidden');
-        valSavingsAmount.innerText = 'Rp ' + Math.max(0, Math.round(netSavings)).toLocaleString('id-ID');
+        if (rowSavingsContainer) rowSavingsContainer.classList.remove('hidden');
+        if (valSavingsAmount) valSavingsAmount.innerText = 'Rp ' + Math.max(0, Math.round(netSavings)).toLocaleString('id-ID');
 
       } else if (grandTotalWatt <= realCapacityWatt) {
         vCard.className = "p-6 rounded-xl border-2 transition-all duration-300 bg-amber-50 border-amber-300 text-amber-900 print-card";
@@ -1256,11 +1266,18 @@
         recFuel.innerText = `~${estLiters} Liter Solar (${eventHours} Jam)`;
 
         // Catatan Risiko Kondisi Hybrid
-        riskText.innerHTML = "Beban listrik mendekati batas PLN. Pisahkan sakelar panggung utama ke genset agar jika terjadi lonjakan daya saat band/performa puncak, MCB gedung sekolah tidak trip atau padam total.";
+        if (riskText) {
+          riskText.innerHTML = `
+            <div class="space-y-1 text-[11px] leading-relaxed">
+              <p><strong>1. Analisis Daya:</strong> Beban listrik mendekati batas maksimum PLN gedung. Berisiko memicu trip jika terjadi lonjakan daya panggung.</p>
+              <p><strong>2. Mitigasi Risiko:</strong> Wajib memisahkan jalur listrik Sound System & Lighting ke Genset 20-30 kVA agar operasional gedung sekolah tetap stabil.</p>
+            </div>
+          `;
+        }
 
         rowGensetRent.classList.remove('hidden');
         rowFuelCost.classList.remove('hidden');
-        rowSavingsContainer.classList.add('hidden');
+        if (rowSavingsContainer) rowSavingsContainer.classList.add('hidden');
 
         const plnKwhUsed = (baseLoad * eventHours) / 1000;
         const plnCost = plnKwhUsed * tariff;
@@ -1296,11 +1313,18 @@
         recFuel.innerText = `${estLiters} Liter Solar (${eventHours} Jam)`;
 
         // Catatan Risiko Kondisi Overload
-        riskText.innerHTML = "<strong>Risiko Tinggi!</strong> Memaksa menggunakan listrik PLN tanpa genset dipastikan akan membanting MCB utama sekolah. Wajib mengisolasi panggung & bazaar ke genset dedicated.";
+        if (riskText) {
+          riskText.innerHTML = `
+            <div class="space-y-1 text-[11px] leading-relaxed">
+              <p><strong>1. Analisis Daya:</strong> Total beban acara melebihi kapasitas PLN sekolah. Dipastikan memicu listrik padam total (*blackout*).</p>
+              <p><strong>2. Keputusan Wajib:</strong> Wajib menyewa Genset ${suggestedKva} kVA untuk menopang seluruh beban panggung & bazaar.</p>
+            </div>
+          `;
+        }
 
         rowGensetRent.classList.remove('hidden');
         rowFuelCost.classList.remove('hidden');
-        rowSavingsContainer.classList.add('hidden');
+        if (rowSavingsContainer) rowSavingsContainer.classList.add('hidden');
 
         const baseLoadKwh = (baseLoad * eventHours) / 1000;
         const baseLoadPlnCost = baseLoadKwh * tariff;
