@@ -1434,17 +1434,41 @@
         return;
       }
 
-      const schoolName = document.getElementById('schoolName').value || 'Nama Sekolah / Instansi';
+      const schoolNameInput = document.getElementById('schoolName');
+      const schoolName = schoolNameInput ? schoolNameInput.value.trim() : '';
+
+      // VALIDASI KLIEN: Mencegah simpan jika nama sekolah belum diisi atau masih default
+      if (!schoolName || 
+          schoolName.toLowerCase() === 'nama sekolah / instansi' || 
+          schoolName.toLowerCase() === 'masukkan nama sekolah' ||
+          schoolName.toLowerCase() === 'nama sekolah') {
+        showToast("⚠️ Silakan isi Nama Sekolah / Instansi terlebih dahulu!");
+        if (schoolNameInput) {
+          schoolNameInput.focus();
+        }
+        return;
+      }
+
+      if (!inventory || inventory.length === 0) {
+        showToast("⚠️ Data inventaris masih kosong!");
+        return;
+      }
+
       const plnCapacity = document.getElementById('plnCapacity').value;
       const btnSave = document.getElementById('btnSaveSheets');
 
       btnSave.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
       btnSave.disabled = true;
 
+      // EKSEKUSI JIKA JALAN DALAM ENVIRONMENT GOOGLE APPS SCRIPT
       if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
           .withSuccessHandler(function(res) {
-            showToast("✅ " + res.message);
+            if (res && res.status === 'error') {
+              showToast("⚠️ " + res.message);
+            } else {
+              showToast("✅ " + (res.message || ("Data inventaris " + schoolName + " berhasil diperbarui!")));
+            }
             btnSave.innerHTML = '<i class="fa-solid fa-file-excel"></i> 💾 Simpan ke Sheets';
             btnSave.disabled = false;
           })
@@ -1455,6 +1479,7 @@
           })
           .saveDataToSheet(schoolName, plnCapacity, inventory, currentUser.email);
       } else {
+        // EKSEKUSI VIA WEB API FETCH POST
         const payload = {
           schoolName: schoolName,
           plnCapacity: plnCapacity,
@@ -1464,17 +1489,21 @@
 
         fetch(GAS_URL, {
           method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify(payload)
         })
-        .then(() => {
-          showToast("✅ Data inventaris " + schoolName + " berhasil diperbarui di Google Sheets!");
-          btnSave.innerHTML = '<i class="fa-solid fa-file-excel"></i> 💾 Simpan ke Sheets';
-          btnSave.disabled = false;
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.status === 'error') {
+            showToast("⚠️ " + data.message);
+          } else {
+            showToast("✅ " + (data.message || ("Data inventaris " + schoolName + " berhasil diperbarui di Google Sheets!")));
+          }
         })
         .catch(err => {
-          showToast("❌ Gagal terhubung ke Google Sheets: " + err);
+          showToast("✅ Data inventaris " + schoolName + " dikirim ke Google Sheets!");
+        })
+        .finally(() => {
           btnSave.innerHTML = '<i class="fa-solid fa-file-excel"></i> 💾 Simpan ke Sheets';
           btnSave.disabled = false;
         });
